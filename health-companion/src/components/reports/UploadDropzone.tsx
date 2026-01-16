@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import { upload } from "@vercel/blob/client";
 import { Upload, FileText, X, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -15,6 +16,7 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -52,9 +54,9 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
       return;
     }
 
-    const validTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg", "text/markdown", "text/plain"];
+    const validTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
     if (!validTypes.includes(file.type)) {
-      setError("Only medical documents (PDF, JPG, PNG, MD) are accepted.");
+      setError("Invalid file type. Only PDF, JPG, and PNG are allowed.");
       return;
     }
 
@@ -65,29 +67,41 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
     if (!file) return;
 
     setIsUploading(true);
+    setProgress(0);
     setError(null);
 
     try {
-      // 1. Prepare Multipart Form Data
-      const formData = new FormData();
-      formData.append("file", file);
+      // 1. Upload to Vercel Blob
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/reports/upload-url",
+        onUploadProgress: (progressEvent) => {
+          setProgress((progressEvent.percentage / 100) * 90); // Scale to 90%
+        },
+      });
 
-      // 2. Submit directly to our API (which now forwards to OnDemand DB)
+      // 2. Save metadata to our DB
       const response = await fetch("/api/reports", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType: file.type,
+          size: file.size,
+          storageKey: blob.url,
+        }),
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.details || errData.error || "Synchronization with Knowledge Base failed.");
+        throw new Error("Failed to save report metadata");
       }
 
+      setProgress(100);
       setFile(null);
       onUploadComplete();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "Sync failed. Check your network or file format.");
+      setError("Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -110,7 +124,7 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
           id="file-upload"
           className="hidden"
           onChange={handleFileSelect}
-          accept=".pdf,.jpg,.jpeg,.png,.md,.txt"
+          accept=".pdf,.jpg,.jpeg,.png"
           disabled={isUploading}
         />
 
@@ -123,8 +137,8 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
               <Upload className="w-6 h-6 text-primary" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-bold uppercase tracking-widest text-gray-900">Clinical Acquisition</p>
-              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">Drag or click to ingest medical docs</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-900">Document Upload</p>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">PDF, PNG, JPG up to 10MB</p>
             </div>
           </label>
         ) : (
@@ -164,21 +178,15 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
           <div className="mt-6 space-y-3">
             <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
               <Loader2 className="w-3 h-3 animate-spin" />
-              Ingesting to Vector DB...
+              Uploading Documents...
             </div>
-            <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-              <motion.div 
-                animate={{ x: ["-100%", "100%"] }} 
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                className="h-full w-full bg-primary" 
-              />
-            </div>
+            <Progress value={progress} className="h-1" />
           </div>
         )}
 
         {file && !isUploading && (
           <Button onClick={handleUpload} className="mt-6 w-full h-12 rounded-2xl bg-gray-900 text-white font-bold uppercase tracking-widest text-[10px] shadow-xl">
-            Authorize Ingestion
+            Secure Upload
           </Button>
         )}
       </div>
