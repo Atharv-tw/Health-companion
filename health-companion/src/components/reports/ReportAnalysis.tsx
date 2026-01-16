@@ -26,16 +26,10 @@ export function ReportAnalysis({ report, onClose }: ReportAnalysisProps) {
     const analyzeReport = async () => {
       try {
         setLoading(true);
-        // We trigger the analysis by sending a message to the AI Agent
-        const response = await fetch("/api/chat", {
+        // Use dedicated analyze endpoint that uses extracted text from the report
+        const response = await fetch(`/api/reports/${report.id}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: `Please analyze this medical report: "${report.fileName}" (ID: ${report.id}). Summarize the key findings, explain any medical terms, and check for any abnormal values.`,
-            // We don't pass a sessionId so it creates a temporary/new context or uses a default one?
-            // Ideally we might want to link this to the main chat, but for a standalone modal, a new session or stateless call is fine.
-            // But /api/chat requires a session or creates one.
-          }),
         });
 
         if (!response.ok) {
@@ -43,7 +37,7 @@ export function ReportAnalysis({ report, onClose }: ReportAnalysisProps) {
         }
 
         const data = await response.json();
-        setAnalysis(data.response);
+        setAnalysis(data.analysis);
       } catch (err) {
         console.error(err);
         setError("Unable to analyze report at this time. Please try again later.");

@@ -76,7 +76,7 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
         access: "public",
         handleUploadUrl: "/api/reports/upload-url",
         onUploadProgress: (progressEvent) => {
-          setProgress((progressEvent.percentage / 100) * 90); // Scale to 90%
+          setProgress((progressEvent.percentage / 100) * 90);
         },
       });
 

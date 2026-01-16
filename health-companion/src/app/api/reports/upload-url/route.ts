@@ -19,6 +19,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
         return {
           allowedContentTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'],
+          addRandomSuffix: true, // Prevent filename collisions
           tokenPayload: JSON.stringify({
             userId: session.user.id,
           }),

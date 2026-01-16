@@ -5,7 +5,10 @@
       "Bash(npx create-next-app@latest health-companion --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(npx prisma init)",
-      "WebFetch(domain:docs.on-demand.io)"
+      "WebFetch(domain:docs.on-demand.io)",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

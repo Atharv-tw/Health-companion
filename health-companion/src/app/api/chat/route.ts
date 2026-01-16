@@ -12,9 +12,30 @@ const chatRequestSchema = z.object({
   sessionId: z.string().optional(),
 });
 
-// Interface for symptoms data
+// Interfaces for health data
 interface SymptomsData {
-  items?: Array<{ name: string; severity: string }>;
+  items?: Array<{ name: string; severity: string; duration?: string }>;
+  freeText?: string;
+}
+
+interface VitalsData {
+  heartRate?: number;
+  temperature?: number;
+  bpSystolic?: number;
+  bpDiastolic?: number;
+  spO2?: number;
+}
+
+interface LifestyleData {
+  sleepHours?: number;
+  stressLevel?: string;
+  hydration?: string;
+}
+
+interface UserProfile {
+  age?: number;
+  conditions?: string[];
+  allergies?: string[];
 }
 
 export async function POST(request: NextRequest) {
@@ -97,26 +118,108 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Step 2: Get user health context for AI
+    // Step 2: Get user profile and health context for AI
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, profile: true },
+    });
+
     const recentLogs = await prisma.healthLog.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
-      take: 3,
+      take: 5,
       include: { riskAlert: true },
     });
 
-    const healthContext = recentLogs.length > 0
+    // Get recent conversation history for continuity
+    const recentMessages = await prisma.chatMessage.findMany({
+      where: {
+        session: { userId: session.user.id },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 6, // Last 3 exchanges (user + assistant)
+    });
+
+    // Build comprehensive health context
+    const userProfile = user?.profile as UserProfile | null;
+    const healthParts: string[] = [];
+
+    // Add user profile info
+    if (userProfile) {
+      if (userProfile.age) healthParts.push(`Age: ${userProfile.age}`);
+      if (userProfile.conditions?.length) {
+        healthParts.push(`Known conditions: ${userProfile.conditions.join(", ")}`);
+      }
+      if (userProfile.allergies?.length) {
+        healthParts.push(`Allergies: ${userProfile.allergies.join(", ")}`);
+      }
+    }
+
+    // Add recent health logs with details
+    if (recentLogs.length > 0) {
+      const logSummaries = recentLogs.map((log) => {
+        const parts: string[] = [];
+        const symptoms = log.symptoms as SymptomsData;
+        const vitals = log.vitals as VitalsData | null;
+        const lifestyle = log.lifestyle as LifestyleData | null;
+
+        // Symptoms
+        if (symptoms?.items?.length) {
+          parts.push(`Symptoms: ${symptoms.items.map((s) => `${s.name} (${s.severity})`).join(", ")}`);
+        }
+        if (symptoms?.freeText) {
+          parts.push(`Notes: ${symptoms.freeText}`);
+        }
+
+        // Vitals
+        if (vitals) {
+          const vitalParts: string[] = [];
+          if (vitals.heartRate) vitalParts.push(`HR: ${vitals.heartRate}`);
+          if (vitals.temperature) vitalParts.push(`Temp: ${vitals.temperature}°F`);
+          if (vitals.bpSystolic && vitals.bpDiastolic) {
+            vitalParts.push(`BP: ${vitals.bpSystolic}/${vitals.bpDiastolic}`);
+          }
+          if (vitals.spO2) vitalParts.push(`SpO2: ${vitals.spO2}%`);
+          if (vitalParts.length) parts.push(`Vitals: ${vitalParts.join(", ")}`);
+        }
+
+        // Lifestyle
+        if (lifestyle) {
+          const lifeParts: string[] = [];
+          if (lifestyle.sleepHours) lifeParts.push(`Sleep: ${lifestyle.sleepHours}hrs`);
+          if (lifestyle.stressLevel) lifeParts.push(`Stress: ${lifestyle.stressLevel}`);
+          if (lifestyle.hydration) lifeParts.push(`Hydration: ${lifestyle.hydration}`);
+          if (lifeParts.length) parts.push(lifeParts.join(", "));
+        }
+
+        // Risk alert
+        if (log.riskAlert) {
+          parts.push(`Risk: ${log.riskAlert.riskLevel}`);
+        }
+
+        return parts.join(" | ");
+      });
+
+      healthParts.push(`Recent health logs:\n${logSummaries.join("\n")}`);
+    }
+
+    // Add conversation history summary
+    if (recentMessages.length > 0) {
+      const historyText = recentMessages
+        .reverse()
+        .map((m) => `${m.role}: ${m.content.substring(0, 100)}${m.content.length > 100 ? "..." : ""}`)
+        .join("\n");
+      healthParts.push(`Recent conversation:\n${historyText}`);
+    }
+
+    const healthContext = healthParts.length > 0
       ? {
-          healthSummary: `Recent health logs: ${recentLogs
-            .map((log) => {
-              const symptoms = log.symptoms as SymptomsData;
-              return symptoms?.items?.map((s) => s.name).join(", ") || "no symptoms";
-            })
-            .join("; ")}`,
+          healthSummary: healthParts.join("\n\n"),
           recentSymptoms: recentLogs.flatMap((log) => {
             const symptoms = log.symptoms as SymptomsData;
             return symptoms?.items?.map((s) => s.name) || [];
           }),
+          userName: user?.name || undefined,
         }
       : undefined;
 
