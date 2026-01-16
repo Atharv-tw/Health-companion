@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { upload } from "@vercel/blob/client";
 import { Upload, FileText, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress"; // Assuming shadcn Progress is available
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 interface UploadDropzoneProps {
@@ -72,37 +71,33 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
     setError(null);
 
     try {
-      // 1. Upload to Vercel Blob
-      const blob = await upload(file.name, file, {
-        access: "public",
-        handleUploadUrl: "/api/reports/upload-url",
-        onUploadProgress: (progressEvent) => {
-          setProgress((progressEvent.percentage / 100) * 90); // Scale to 90%
-        },
+      // Upload directly to OnDemand via our API
+      const formData = new FormData();
+      formData.append("file", file);
+
+      setProgress(30);
+
+      const response = await fetch("/api/reports/upload-direct", {
+        method: "POST",
+        body: formData,
       });
 
-      // 2. Save metadata to our DB
-      const response = await fetch("/api/reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          mimeType: file.type,
-          size: file.size,
-          storageKey: blob.url,
-        }),
-      });
+      setProgress(80);
 
       if (!response.ok) {
-        throw new Error("Failed to save report metadata");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Upload failed");
       }
+
+      const data = await response.json();
+      console.log("Upload response:", data);
 
       setProgress(100);
       setFile(null);
       onUploadComplete();
     } catch (err) {
       console.error(err);
-      setError("Upload failed. Please try again.");
+      setError(err instanceof Error ? err.message : "Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
     }
