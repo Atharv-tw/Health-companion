@@ -139,10 +139,10 @@ interface ContextMetadata {
 
 /**
  * Create a new chat session
+ * Note: agentIds/toolIds should NOT be passed here - they go in the query
  */
 async function createSession(
   externalUserId: string,
-  agentIds: string[] = [],
   contextMetadata: ContextMetadata[] = []
 ): Promise<string> {
   const config = getConfig();
@@ -150,11 +150,6 @@ async function createSession(
   const body: Record<string, unknown> = {
     externalUserId: externalUserId,
   };
-
-  // Include agentIds if provided
-  if (agentIds.length > 0) {
-    body.agentIds = agentIds;
-  }
 
   // Include contextMetadata if provided
   if (contextMetadata.length > 0) {
@@ -282,9 +277,9 @@ export async function chat(
     contextMetadata.push({ key: "recentSymptoms", value: context.recentSymptoms.join(", ") });
   }
 
-  // Create session if needed
+  // Create session if needed (agents are passed in query, not session)
   const externalUserId = userId || `user-${Date.now()}`;
-  const sessionId = existingSessionId || (await createSession(externalUserId, agentIds, contextMetadata));
+  const sessionId = existingSessionId || (await createSession(externalUserId, contextMetadata));
 
   // Submit query with selected agents
   const response = await submitQuery(sessionId, message, agentIds);
@@ -373,7 +368,7 @@ export async function analyzeReport(
 
   // Step 3: Create session and analyze with GPT-4.1
   const agentIds = AGENT_PLUGINS.REPORT_ANALYZER ? [AGENT_PLUGINS.REPORT_ANALYZER] : [];
-  const chatSessionId = sessionId || (await createSession(`report-analyzer-${Date.now()}`, agentIds));
+  const chatSessionId = sessionId || (await createSession(`report-analyzer-${Date.now()}`));
 
   const query = extractedText
     ? `Please analyze this medical report and explain the key findings. Remember: Do not diagnose, only explain what the values mean and suggest consulting a healthcare provider for interpretation.\n\n${extractedText}`
