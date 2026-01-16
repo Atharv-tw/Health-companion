@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd health-companion && npm run build",
+  "outputDirectory": "health-companion/.next",
+  "installCommand": "cd health-companion && npm install",
+  "framework": "nextjs"
+}
