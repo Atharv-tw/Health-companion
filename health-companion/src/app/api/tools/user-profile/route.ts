@@ -6,12 +6,24 @@ const querySchema = z.object({
   userId: z.string().min(1),
 });
 
+// CORS headers for OnDemand to call this endpoint
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-app-secret, apikey",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET(request: NextRequest) {
   try {
-    // 1. Authorization
+    // 1. Authorization - check for app secret or OnDemand API key
     const authHeader = request.headers.get("x-app-secret");
-    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET) {
-       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const apiKey = request.headers.get("apikey");
+    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET && !apiKey) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
     // 2. Validation
@@ -21,7 +33,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: "UserId is required" }, { status: 400 });
+      return NextResponse.json({ error: "UserId is required" }, { status: 400, headers: corsHeaders });
     }
 
     const { userId } = result.data;
@@ -31,17 +43,17 @@ export async function GET(request: NextRequest) {
       where: { id: userId },
       select: {
         id: true,
-        email: true, // Only if needed, maybe mask it
-        profile: true, // This contains age, conditions, etc.
+        email: true,
+        profile: true,
         name: true
       }
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404, headers: corsHeaders });
     }
 
-    const profile = user.profile as any || {};
+    const profile = user.profile as Record<string, unknown> || {};
 
     // 4. Format
     return NextResponse.json({
@@ -51,10 +63,10 @@ export async function GET(request: NextRequest) {
       conditions: profile.conditions || [],
       allergies: profile.allergies || [],
       medications: profile.medications || []
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error("Tool Error [user-profile]:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
   }
 }
