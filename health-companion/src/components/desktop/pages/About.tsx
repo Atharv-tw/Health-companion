@@ -35,7 +35,7 @@ export function DesktopAbout() {
             </motion.div>
 
             <div className="relative [perspective:2000px]">
-              <CeramicCard className="aspect-square bg-white/40 flex items-center justify-center border-white/60 shadow-2xl relative overflow-hidden group">
+              <CeramicCard tiltEffect={false} className="aspect-square bg-white/40 flex items-center justify-center border-white/60 shadow-2xl relative overflow-hidden group">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -62,9 +62,9 @@ export function DesktopAbout() {
   );
 }
 
-function AboutValueCard({ icon, title, desc, delay }: { icon: React.ReactNode; title: string; desc: string; delay: number }) {
+function AboutValueCard({ icon, title, desc, delay }: any) {
   return (
-    <CeramicCard delay={delay} className="p-10 flex flex-col items-center text-center space-y-6">
+    <CeramicCard tiltEffect={false} delay={delay} className="p-10 flex flex-col items-center text-center space-y-6">
       <div style={{ transform: "translateZ(50px)" }} className="space-y-6 flex flex-col items-center">
         <div className="w-14 h-14 bg-primary/5 text-primary rounded-2xl flex items-center justify-center">
           {icon}
