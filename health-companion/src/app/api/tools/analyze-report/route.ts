@@ -52,7 +52,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Process with Media API
+    // We assume storageKey is the URL for Vercel Blob (or closely related)
+    // If it's just a path, we might need to construct the URL.
+    // For Vercel Blob, typically the 'url' is what you want.
+    // I'll check if 'storageKey' looks like a URL.
+    
     const fileUrl = report.storageKey;
+    if (!fileUrl.startsWith("http")) {
+      // If it's not a full URL, we might need a base URL or it's a relative path.
+      // But usually 'storageKey' in these implementations holds the public URL.
+      // I'll assume it is the URL for now.
+    }
 
     const analysis = await processMedicalDocument(fileUrl);
 

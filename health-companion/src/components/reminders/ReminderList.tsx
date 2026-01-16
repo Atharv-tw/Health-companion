@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Bell, Trash2, Plus, Clock, Check, X, Pill, GlassWater, Moon, AlertCircle } from 'lucide-react';
+import { Bell, Trash2, Plus, Clock, Pill, GlassWater, Moon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface ReminderListProps {

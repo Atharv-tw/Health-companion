@@ -1,5 +1,4 @@
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Navbar } from "@/components/layout/Navbar";
+import { FloatingDock } from "@/components/layout/FloatingDock";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 
 export default function ProtectedLayout({
@@ -9,14 +8,15 @@ export default function ProtectedLayout({
 }) {
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-gray-50">
-        <Sidebar />
-        <div className="md:pl-64 flex flex-col min-h-screen">
-          <Navbar />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/10">
+        {/* Main Content Area */}
+        <main className="container mx-auto px-4 pt-8 pb-32 min-h-screen">
+            {/* We add pb-32 to ensure content isn't hidden behind the dock */}
             {children}
-          </main>
-        </div>
+        </main>
+
+        {/* Floating Navigation */}
+        <FloatingDock />
       </div>
     </SessionProvider>
   );
