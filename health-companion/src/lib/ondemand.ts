@@ -11,10 +11,12 @@ const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1";
 // Fulfillment Model - the LLM that processes queries
 const FULFILLMENT_MODEL = "predefined-openai-gpt4.1";
 
-// REST API Agent Plugin IDs - Replace with real IDs after creating on OnDemand
-// These agents call back to your deployed backend endpoints
+// Health Chat Agent ID - the main agent created on OnDemand
+const HEALTH_CHAT_AGENT_ID = process.env.ONDEMAND_HEALTH_AGENT_ID || "696a1151c7d6dfdf7e337c7e";
+
+// REST API Agent Plugin IDs - Additional specialized agents (optional)
 const AGENT_PLUGINS = {
-  // Health data agents (create these on OnDemand as REST API agents)
+  HEALTH_CHAT: HEALTH_CHAT_AGENT_ID,
   HEALTH_SUMMARY: process.env.ONDEMAND_PLUGIN_HEALTH_SUMMARY || "",
   RISK_ASSESSMENT: process.env.ONDEMAND_PLUGIN_RISK_ASSESSMENT || "",
   USER_PROFILE: process.env.ONDEMAND_PLUGIN_USER_PROFILE || "",
@@ -62,7 +64,12 @@ function getRelevantPlugins(query: string): string[] {
   const plugins: string[] = [];
   const lowerQuery = query.toLowerCase();
 
-  // Always include health context if available
+  // Always include the main health chat agent
+  if (HEALTH_CHAT_AGENT_ID) {
+    plugins.push(HEALTH_CHAT_AGENT_ID);
+  }
+
+  // Include health summary agent if available
   if (AGENT_PLUGINS.HEALTH_SUMMARY) {
     plugins.push(AGENT_PLUGINS.HEALTH_SUMMARY);
   }
@@ -418,4 +425,4 @@ export function formatResponseWithCitations(response: OnDemandResponse): string 
 }
 
 // Export for reference
-export { AGENTS, AGENT_PLUGINS, MEDIA_PLUGINS, FULFILLMENT_MODEL };
+export { AGENTS, AGENT_PLUGINS, MEDIA_PLUGINS, FULFILLMENT_MODEL, HEALTH_CHAT_AGENT_ID };
