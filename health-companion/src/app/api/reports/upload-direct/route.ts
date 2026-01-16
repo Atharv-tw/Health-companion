@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { put } from "@vercel/blob";
 
 const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1";
 
@@ -30,19 +31,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "API key not configured" }, { status: 500 });
     }
 
-    // Convert file to base64
-    const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
-    const dataUrl = `data:${file.type};base64,${base64}`;
-
-    // Determine which plugin to use based on file type
+    // Determine file type
     const isImage = file.type.startsWith("image/");
     const isPDF = file.type === "application/pdf";
     const processingPlugin = isImage ? MEDIA_PLUGINS.IMAGE : MEDIA_PLUGINS.DOCUMENT;
 
     console.log(`Processing ${file.name} with plugin: ${processingPlugin} (${isImage ? "image" : "document"})`);
 
-    // Upload to OnDemand Media API with processing plugin for text extraction
+    // Step 1: Upload to Vercel Blob first to get a public URL
+    const blob = await put(file.name, file, {
+      access: "public",
+      addRandomSuffix: true,
+    });
+    console.log(`File uploaded to Vercel Blob: ${blob.url}`);
+
+    // Step 2: Send the public URL to OnDemand Media API for text extraction
     const mediaResponse = await fetch(`${ONDEMAND_MEDIA_API}/public/file`, {
       method: "POST",
       headers: {
@@ -50,32 +53,29 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        file: dataUrl,
+        url: blob.url, // OnDemand expects a URL, not base64
         name: file.name,
-        agents: [processingPlugin], // Use plugin to extract text from document/image
+        agents: [processingPlugin],
         responseMode: "sync",
         createdBy: "health-companion",
       }),
     });
 
+    let extractedText: string | null = null;
+    const fileUrl = blob.url;
+
     if (!mediaResponse.ok) {
       const errorText = await mediaResponse.text();
-      console.error("OnDemand Media API error:", errorText);
-      return NextResponse.json(
-        { error: "Failed to upload to OnDemand", details: errorText },
-        { status: 500 }
-      );
+      console.error("OnDemand Media API error (continuing without extraction):", errorText);
+      // Continue without text extraction - file is still stored in Vercel Blob
+    } else {
+      const mediaData = await mediaResponse.json();
+      console.log("OnDemand upload response:", JSON.stringify(mediaData, null, 2));
+
+      // Get extracted content from OnDemand response
+      extractedText = mediaData.data?.context || mediaData.context || null;
+      console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
     }
-
-    const mediaData = await mediaResponse.json();
-    console.log("OnDemand upload response:", JSON.stringify(mediaData, null, 2));
-
-    // Get the file URL/ID and extracted content from OnDemand response
-    const fileId = mediaData.data?.id || mediaData.id;
-    const fileUrl = mediaData.data?.url || mediaData.url || `ondemand://${fileId}`;
-    const extractedText = mediaData.data?.context || mediaData.context || null;
-
-    console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
 
     // Save to database with extracted text for AI analysis
     const report = await prisma.report.create({
@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
         storageKey: report.storageKey,
         hasExtractedText: !!extractedText,
       },
-      ondemand: mediaData,
     });
   } catch (error) {
     console.error("Upload error:", error);
