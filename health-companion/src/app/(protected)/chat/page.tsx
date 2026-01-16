@@ -1,20 +1,27 @@
 "use client";
 
-import { ChatInterface } from "@/components/chat/ChatInterface";
+import { useDevice } from "@/lib/useDevice";
+import { DesktopChat } from "@/components/desktop/pages/Chat";
+import { MobileChat } from "@/components/mobile/pages/Chat";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ChatPage() {
-  return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Health Chat</h1>
-        <p className="text-gray-600 mt-1">
-          Get personalized health guidance from your AI companion.
-        </p>
-      </div>
+  const { isMobile } = useDevice();
 
-      <div className="flex-1 bg-white rounded-lg border shadow-sm overflow-hidden">
-        <ChatInterface />
-      </div>
-    </div>
+  if (isMobile === null) return null;
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={isMobile ? "mobile" : "desktop"}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full"
+      >
+        {isMobile ? <MobileChat /> : <DesktopChat />}
+      </motion.div>
+    </AnimatePresence>
   );
 }
