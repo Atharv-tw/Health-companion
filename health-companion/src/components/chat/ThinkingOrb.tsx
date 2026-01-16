@@ -45,11 +45,6 @@ export function ThinkingOrb({ isThinking }: ThinkingOrbProps) {
           </>
         )}
       </div>
-      
-      {/* Label */}
-      <div className="absolute -bottom-2 text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400">
-        {isThinking ? "Processing Context..." : "Oracle Ready"}
-      </div>
     </div>
   );
 }
