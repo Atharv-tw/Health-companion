@@ -54,7 +54,7 @@ export function RiskCard({ assessment, showDetails = true }: RiskCardProps) {
   const Icon = config.icon;
 
   return (
-    <CeramicCard className={cn("p-0 overflow-hidden", config.borderColor, "border-2")}>
+    <CeramicCard tiltEffect={false} className={cn("p-0 overflow-hidden", config.borderColor, "border-2")}>
       <div className={cn("p-8 flex items-center justify-between", config.bgColor)}>
         <div className="flex items-center gap-4">
           <div className={cn("w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm", config.color)}>
