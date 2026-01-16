@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         throw new Error("OnDemand API not configured");
       }
 
-      const { response } = await chat(
+      const { response, sessionId: activeSessionId } = await chat(
         chatSession.ondemandSessionId,
         message,
         session.user.id,
@@ -151,10 +151,10 @@ export async function POST(request: NextRequest) {
       );
 
       // Update OnDemand session ID if new
-      if (response.sessionId && response.sessionId !== chatSession.ondemandSessionId) {
+      if (activeSessionId && activeSessionId !== chatSession.ondemandSessionId) {
         await prisma.chatSession.update({
           where: { id: chatSession.id },
-          data: { ondemandSessionId: response.sessionId },
+          data: { ondemandSessionId: activeSessionId },
         });
       }
 
