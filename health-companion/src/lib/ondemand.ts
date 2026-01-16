@@ -57,15 +57,9 @@ function getConfig(): OnDemandConfig {
 
 // Built-in OnDemand agents (from Agent Builder export)
 const BUILTIN_AGENTS = {
-  // Knowledge agents
+  // Knowledge agents - these 2 are confirmed working
   MEDICAL_KNOWLEDGE: "agent-1712327325",
   HEALTH_KNOWLEDGE: "agent-1713962163",
-  // Media processing agents
-  DOCUMENT_PROCESSOR: "agent-1713954536",
-  IMAGE_PROCESSOR: "agent-1713958591",
-  // Additional knowledge agents
-  KNOWLEDGE_BASE_1: "agent-1713958830",
-  KNOWLEDGE_BASE_2: "agent-1713961903",
 };
 
 /**
