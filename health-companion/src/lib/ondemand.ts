@@ -58,10 +58,16 @@ function getConfig(): OnDemandConfig {
 /**
  * Get relevant plugin IDs based on user query
  * Returns array of plugin IDs that should be used for this query
+ * NOTE: Currently disabled - agents returning "invalid" errors
  */
-function getRelevantPlugins(query: string): string[] {
+function getRelevantPlugins(_query: string): string[] {
+  // TODO: Re-enable when agent IDs are validated on OnDemand
+  // For now, use just GPT-4.1 without agents
+  return [];
+
+  /*
   const plugins: string[] = [];
-  const lowerQuery = query.toLowerCase();
+  const lowerQuery = _query.toLowerCase();
 
   // Always include the main health chat agent
   if (HEALTH_CHAT_AGENT_ID) {
@@ -124,6 +130,7 @@ function getRelevantPlugins(query: string): string[] {
 
   // Remove duplicates and empty strings
   return Array.from(new Set(plugins)).filter(Boolean);
+  */
 }
 
 // Legacy function for backward compatibility
