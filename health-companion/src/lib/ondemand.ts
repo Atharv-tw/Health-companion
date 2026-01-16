@@ -1,22 +1,44 @@
 /**
  * OnDemand API Client
  *
- * Handles communication with OnDemand.io Workflow API.
- *
- * ARCHITECTURE:
- * Uses Workflow Automation API. All user queries are sent to a workflow
- * that contains the Orchestrator + 6 Specialist agents.
+ * Uses Chat API with GPT-4o model + REST API agents for data retrieval.
+ * Our backend provides tool endpoints that OnDemand agents call.
  */
 
-const ONDEMAND_WORKFLOW_API = "https://api.on-demand.io/automation/api/workflow";
+const ONDEMAND_CHAT_API = "https://api.on-demand.io/chat/v1";
+const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1";
+
+// Fulfillment Model - the LLM that processes queries
+const FULFILLMENT_MODEL = "predefined-openai-gpt4.1";
+
+// REST API Agent Plugin IDs - Replace with real IDs after creating on OnDemand
+// These agents call back to your deployed backend endpoints
+const AGENT_PLUGINS = {
+  // Health data agents (create these on OnDemand as REST API agents)
+  HEALTH_SUMMARY: process.env.ONDEMAND_PLUGIN_HEALTH_SUMMARY || "",
+  RISK_ASSESSMENT: process.env.ONDEMAND_PLUGIN_RISK_ASSESSMENT || "",
+  USER_PROFILE: process.env.ONDEMAND_PLUGIN_USER_PROFILE || "",
+  HEALTH_LOGS: process.env.ONDEMAND_PLUGIN_HEALTH_LOGS || "",
+  REPORT_ANALYZER: process.env.ONDEMAND_PLUGIN_REPORT_ANALYZER || "",
+  REMINDER_MANAGER: process.env.ONDEMAND_PLUGIN_REMINDER_MANAGER || "",
+};
+
+// Media Processing Plugin IDs (built-in OnDemand plugins)
+const MEDIA_PLUGINS = {
+  DOCUMENT: "plugin-1713954536",
+  IMAGE: "plugin-1713958591",
+};
+
+// Legacy AGENTS export for backward compatibility
+const AGENTS = AGENT_PLUGINS;
 
 interface OnDemandConfig {
   apiKey: string;
-  workflowId: string;
 }
 
 interface OnDemandResponse {
   answer: string;
+  sessionId?: string;
   citations?: Array<{
     source: string;
     title?: string;
@@ -24,117 +46,358 @@ interface OnDemandResponse {
   }>;
 }
 
-interface OnDemandError {
-  error: string;
-  code?: string;
-  details?: string;
-}
-
-/**
- * Get OnDemand configuration from environment
- */
 function getConfig(): OnDemandConfig {
   const apiKey = process.env.ONDEMAND_API_KEY;
-  const workflowId = process.env.ONDEMAND_WORKFLOW_ID || process.env.ONDEMAND_ORCHESTRATOR_ID;
-
   if (!apiKey) {
     throw new Error("ONDEMAND_API_KEY is not configured");
   }
-
-  if (!workflowId) {
-    throw new Error("ONDEMAND_WORKFLOW_ID is not configured");
-  }
-
-  return {
-    apiKey,
-    workflowId,
-  };
+  return { apiKey };
 }
 
 /**
- * Execute the workflow with a user query
+ * Get relevant plugin IDs based on user query
+ * Returns array of plugin IDs that should be used for this query
  */
-export async function executeWorkflow(
+function getRelevantPlugins(query: string): string[] {
+  const plugins: string[] = [];
+  const lowerQuery = query.toLowerCase();
+
+  // Always include health context if available
+  if (AGENT_PLUGINS.HEALTH_SUMMARY) {
+    plugins.push(AGENT_PLUGINS.HEALTH_SUMMARY);
+  }
+
+  // Symptom-related queries - include health logs
+  if (
+    lowerQuery.includes("symptom") ||
+    lowerQuery.includes("feeling") ||
+    lowerQuery.includes("pain") ||
+    lowerQuery.includes("ache") ||
+    lowerQuery.includes("fever") ||
+    lowerQuery.includes("headache") ||
+    lowerQuery.includes("nausea") ||
+    lowerQuery.includes("dizzy") ||
+    lowerQuery.includes("tired") ||
+    lowerQuery.includes("fatigue")
+  ) {
+    if (AGENT_PLUGINS.HEALTH_LOGS) plugins.push(AGENT_PLUGINS.HEALTH_LOGS);
+  }
+
+  // Risk-related queries
+  if (
+    lowerQuery.includes("risk") ||
+    lowerQuery.includes("score") ||
+    lowerQuery.includes("level") ||
+    lowerQuery.includes("assessment") ||
+    lowerQuery.includes("danger")
+  ) {
+    if (AGENT_PLUGINS.RISK_ASSESSMENT) plugins.push(AGENT_PLUGINS.RISK_ASSESSMENT);
+  }
+
+  // Profile/personal queries
+  if (
+    lowerQuery.includes("profile") ||
+    lowerQuery.includes("condition") ||
+    lowerQuery.includes("allergy") ||
+    lowerQuery.includes("medication") ||
+    lowerQuery.includes("my health")
+  ) {
+    if (AGENT_PLUGINS.USER_PROFILE) plugins.push(AGENT_PLUGINS.USER_PROFILE);
+  }
+
+  // Report/lab related queries
+  if (
+    lowerQuery.includes("report") ||
+    lowerQuery.includes("lab") ||
+    lowerQuery.includes("test result") ||
+    lowerQuery.includes("blood") ||
+    lowerQuery.includes("scan")
+  ) {
+    if (AGENT_PLUGINS.REPORT_ANALYZER) plugins.push(AGENT_PLUGINS.REPORT_ANALYZER);
+  }
+
+  // Reminder queries
+  if (
+    lowerQuery.includes("reminder") ||
+    lowerQuery.includes("medicine") ||
+    lowerQuery.includes("schedule") ||
+    lowerQuery.includes("take my")
+  ) {
+    if (AGENT_PLUGINS.REMINDER_MANAGER) plugins.push(AGENT_PLUGINS.REMINDER_MANAGER);
+  }
+
+  // Remove duplicates and empty strings
+  return Array.from(new Set(plugins)).filter(Boolean);
+}
+
+// Legacy function for backward compatibility
+function routeToAgent(query: string): string {
+  const plugins = getRelevantPlugins(query);
+  return plugins[0] || "";
+}
+
+interface ContextMetadata {
+  key: string;
+  value: string;
+}
+
+/**
+ * Create a new chat session
+ */
+async function createSession(
+  externalUserId: string,
+  agentIds: string[] = [],
+  contextMetadata: ContextMetadata[] = []
+): Promise<string> {
+  const config = getConfig();
+
+  const body: Record<string, unknown> = {
+    externalUserId: externalUserId,
+  };
+
+  // Include agentIds if provided
+  if (agentIds.length > 0) {
+    body.agentIds = agentIds;
+  }
+
+  // Include contextMetadata if provided
+  if (contextMetadata.length > 0) {
+    body.contextMetadata = contextMetadata;
+  }
+
+  console.log("Creating session with body:", JSON.stringify(body));
+
+  const response = await fetch(`${ONDEMAND_CHAT_API}/sessions`, {
+    method: "POST",
+    headers: {
+      apikey: config.apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error("Session creation error:", error);
+    throw new Error("Failed to create chat session");
+  }
+
+  const data = await response.json();
+  console.log("Session created:", data);
+  return data.data?.id || data.id;
+}
+
+/**
+ * Submit a query via Chat API
+ * Uses GPT-4.1 as fulfillment model + optional agents for data retrieval
+ */
+async function submitQuery(
+  sessionId: string,
   query: string,
-  userId?: string,
-  context?: { healthSummary?: string; recentSymptoms?: string[] }
+  agentIds: string[] = [],
+  responseMode: "sync" | "stream" = "sync"
 ): Promise<OnDemandResponse> {
   const config = getConfig();
 
-  // Construct the enriched query with context
-  let enrichedQuery = query;
+  // Filter out empty agent IDs
+  const activeAgents = agentIds.filter(Boolean);
 
-  const contextParts = [];
-  if (context?.healthSummary) {
-    contextParts.push(`[Context: User Health Summary: ${context.healthSummary}]`);
-  }
-  if (userId) {
-    contextParts.push(`[Context: Current User ID: ${userId}]`);
-  }
+  console.log(`Submitting query to session ${sessionId}`);
+  console.log(`Using model: ${FULFILLMENT_MODEL}`);
+  console.log(`Active agents: ${activeAgents.length > 0 ? activeAgents.join(", ") : "none"}`);
+  console.log(`Query: ${query.substring(0, 100)}...`);
 
-  if (contextParts.length > 0) {
-    enrichedQuery = `${contextParts.join("\n")}\n\n${query}`;
+  const requestBody: Record<string, unknown> = {
+    query: query,
+    endpointId: FULFILLMENT_MODEL,
+    responseMode: responseMode,
+    modelConfigs: {
+      temperature: 0.7,
+      topP: 1,
+      maxTokens: 2048,
+      presencePenalty: 0,
+      frequencyPenalty: 0,
+    },
+  };
+
+  // Only include agentIds if we have active agents
+  if (activeAgents.length > 0) {
+    requestBody.agentIds = activeAgents;
   }
 
   const response = await fetch(
-    `${ONDEMAND_WORKFLOW_API}/${config.workflowId}/execute`,
+    `${ONDEMAND_CHAT_API}/sessions/${sessionId}/query`,
     {
       method: "POST",
       headers: {
         apikey: config.apiKey,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        query: enrichedQuery,
-        userId: userId,
-      }),
+      body: JSON.stringify(requestBody),
     }
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
-    let errorData: OnDemandError;
-    try {
-      errorData = JSON.parse(errorText);
-    } catch {
-      errorData = { error: errorText };
-    }
-    throw new Error(errorData.error || "Failed to get response from OnDemand workflow");
+    const error = await response.text();
+    console.error("Query error:", error);
+    throw new Error(`Failed to get response: ${error}`);
   }
 
   const data = await response.json();
+  console.log("Chat API response:", JSON.stringify(data, null, 2));
 
-  // Extract response from workflow result
-  // Workflow API may return different structure - adjust as needed
-  const answer = data.data?.output ||
-                 data.data?.answer ||
-                 data.output ||
-                 data.answer ||
-                 data.response ||
-                 data.result ||
-                 "I couldn't generate a response.";
+  // Extract the answer from response
+  const answer =
+    data.data?.answer ||
+    data.answer ||
+    data.data?.response ||
+    data.response ||
+    "I couldn't generate a response.";
 
   return {
-    answer: typeof answer === 'string' ? answer : JSON.stringify(answer),
+    answer: typeof answer === "string" ? answer : JSON.stringify(answer),
+    sessionId,
     citations: data.data?.citations || data.citations || [],
   };
 }
 
 /**
- * Main chat interface (simplified - no sessions needed for workflow)
+ * Main chat function - uses GPT-4.1 with relevant agents based on query
  */
 export async function chat(
-  sessionId: string | null, // Kept for backwards compatibility, not used
+  existingSessionId: string | null,
   message: string,
   userId?: string,
   context?: { healthSummary?: string; recentSymptoms?: string[] }
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
-  const response = await executeWorkflow(message, userId, context);
+  // Get relevant agents based on message content
+  const agentIds = getRelevantPlugins(message);
+  console.log(`Selected agents: ${agentIds.length > 0 ? agentIds.join(", ") : "none (using model only)"}`);
+
+  // Build context metadata for session
+  const contextMetadata: ContextMetadata[] = [];
+  if (userId) {
+    contextMetadata.push({ key: "userId", value: userId });
+  }
+  if (context?.healthSummary) {
+    contextMetadata.push({ key: "healthSummary", value: context.healthSummary });
+  }
+  if (context?.recentSymptoms && context.recentSymptoms.length > 0) {
+    contextMetadata.push({ key: "recentSymptoms", value: context.recentSymptoms.join(", ") });
+  }
+
+  // Create session if needed
+  const externalUserId = userId || `user-${Date.now()}`;
+  const sessionId = existingSessionId || (await createSession(externalUserId, agentIds, contextMetadata));
+
+  // Submit query with selected agents
+  const response = await submitQuery(sessionId, message, agentIds);
 
   return {
     response,
-    sessionId: `workflow-${Date.now()}`, // Generate a pseudo session ID for compatibility
+    sessionId,
   };
+}
+
+/**
+ * Upload media file for analysis via Media API (URL-based)
+ * Supports documents (PDF, DOC) and images (PNG, JPG)
+ */
+export async function uploadMedia(
+  fileUrl: string,
+  fileName: string,
+  fileType: "document" | "image",
+  sessionId?: string
+): Promise<{ mediaId: string; extractedTextUrl?: string; context?: string }> {
+  const config = getConfig();
+
+  const agentId =
+    fileType === "document" ? MEDIA_PLUGINS.DOCUMENT : MEDIA_PLUGINS.IMAGE;
+
+  console.log(`Uploading media: ${fileName} (${fileType})`);
+  console.log(`Using agent: ${agentId}`);
+
+  const requestBody: Record<string, unknown> = {
+    url: fileUrl,
+    name: fileName,
+    agents: [agentId],
+    responseMode: "sync",
+    createdBy: "health-companion",
+    updatedBy: "health-companion",
+  };
+
+  // Include sessionId if provided (links media to chat session)
+  if (sessionId) {
+    requestBody.sessionId = sessionId;
+  }
+
+  const response = await fetch(`${ONDEMAND_MEDIA_API}/public/file`, {
+    method: "POST",
+    headers: {
+      apikey: config.apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error("Media upload error:", error);
+    throw new Error(`Failed to upload media: ${error}`);
+  }
+
+  const data = await response.json();
+  console.log("Media upload response:", JSON.stringify(data, null, 2));
+
+  return {
+    mediaId: data.data?.id || data.id,
+    extractedTextUrl: data.data?.url || data.url,
+    context: data.data?.context || data.context,
+  };
+}
+
+/**
+ * Analyze a report using Media API + GPT-4.1 model
+ */
+export async function analyzeReport(
+  fileUrl: string,
+  fileName: string,
+  sessionId?: string
+): Promise<OnDemandResponse> {
+  // Step 1: Upload and process media (this extracts text via Media API)
+  const media = await uploadMedia(fileUrl, fileName, "document", sessionId);
+
+  // Step 2: Use extracted context from media response
+  let extractedText = media.context || "";
+
+  // Limit text length if too long
+  if (extractedText.length > 3000) {
+    extractedText = extractedText.substring(0, 3000) + "...";
+  }
+
+  // Step 3: Create session and analyze with GPT-4.1
+  const agentIds = AGENT_PLUGINS.REPORT_ANALYZER ? [AGENT_PLUGINS.REPORT_ANALYZER] : [];
+  const chatSessionId = sessionId || (await createSession(`report-analyzer-${Date.now()}`, agentIds));
+
+  const query = extractedText
+    ? `Please analyze this medical report and explain the key findings. Remember: Do not diagnose, only explain what the values mean and suggest consulting a healthcare provider for interpretation.\n\n${extractedText}`
+    : `A medical document "${fileName}" has been uploaded (ID: ${media.mediaId}). Please provide general guidance on how to interpret medical reports and remind the user to consult a healthcare provider.`;
+
+  const response = await submitQuery(chatSessionId, query, agentIds);
+
+  return response;
+}
+
+/**
+ * Execute workflow (kept for compatibility, now uses chat)
+ */
+export async function executeWorkflow(
+  query: string,
+  userId?: string,
+  context?: { healthSummary?: string; recentSymptoms?: string[] }
+): Promise<OnDemandResponse> {
+  const { response } = await chat(null, query, userId, context);
+  return response;
 }
 
 /**
@@ -153,3 +416,6 @@ export function formatResponseWithCitations(response: OnDemandResponse): string 
 
   return formatted;
 }
+
+// Export for reference
+export { AGENTS, AGENT_PLUGINS, MEDIA_PLUGINS, FULFILLMENT_MODEL };
