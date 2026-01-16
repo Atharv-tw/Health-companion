@@ -1,15 +1,15 @@
 /**
  * OnDemand API Client
  *
- * Uses Chat API with GPT-4o model + REST API agents (plugins) for data retrieval.
+ * Uses Chat API with GPT-4o model + REST API agents for data retrieval.
  * Our backend provides tool endpoints that OnDemand agents call.
  */
 
 const ONDEMAND_CHAT_API = "https://api.on-demand.io/chat/v1";
-const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1/public/file";
+const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1";
 
 // Fulfillment Model - the LLM that processes queries
-const FULFILLMENT_MODEL = "predefined-openai-gpt4o";
+const FULFILLMENT_MODEL = "predefined-openai-gpt4.1";
 
 // REST API Agent Plugin IDs - Replace with real IDs after creating on OnDemand
 // These agents call back to your deployed backend endpoints
@@ -136,11 +136,36 @@ function routeToAgent(query: string): string {
   return plugins[0] || "";
 }
 
+interface ContextMetadata {
+  key: string;
+  value: string;
+}
+
 /**
  * Create a new chat session
  */
-async function createSession(externalUserId: string): Promise<string> {
+async function createSession(
+  externalUserId: string,
+  agentIds: string[] = [],
+  contextMetadata: ContextMetadata[] = []
+): Promise<string> {
   const config = getConfig();
+
+  const body: Record<string, unknown> = {
+    externalUserId: externalUserId,
+  };
+
+  // Include agentIds if provided
+  if (agentIds.length > 0) {
+    body.agentIds = agentIds;
+  }
+
+  // Include contextMetadata if provided
+  if (contextMetadata.length > 0) {
+    body.contextMetadata = contextMetadata;
+  }
+
+  console.log("Creating session with body:", JSON.stringify(body));
 
   const response = await fetch(`${ONDEMAND_CHAT_API}/sessions`, {
     method: "POST",
@@ -148,10 +173,7 @@ async function createSession(externalUserId: string): Promise<string> {
       apikey: config.apiKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      externalUserId: externalUserId,
-      // Don't pass agentIds - our agents are endpoints, not knowledge agents
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -167,32 +189,40 @@ async function createSession(externalUserId: string): Promise<string> {
 
 /**
  * Submit a query via Chat API
- * Uses GPT-4o as fulfillment model + optional plugin agents for data retrieval
+ * Uses GPT-4.1 as fulfillment model + optional agents for data retrieval
  */
 async function submitQuery(
   sessionId: string,
   query: string,
-  pluginIds: string[] = []
+  agentIds: string[] = [],
+  responseMode: "sync" | "stream" = "sync"
 ): Promise<OnDemandResponse> {
   const config = getConfig();
 
-  // Filter out empty plugin IDs
-  const activePlugins = pluginIds.filter(Boolean);
+  // Filter out empty agent IDs
+  const activeAgents = agentIds.filter(Boolean);
 
   console.log(`Submitting query to session ${sessionId}`);
   console.log(`Using model: ${FULFILLMENT_MODEL}`);
-  console.log(`Active plugins: ${activePlugins.length > 0 ? activePlugins.join(", ") : "none"}`);
+  console.log(`Active agents: ${activeAgents.length > 0 ? activeAgents.join(", ") : "none"}`);
   console.log(`Query: ${query.substring(0, 100)}...`);
 
   const requestBody: Record<string, unknown> = {
     query: query,
     endpointId: FULFILLMENT_MODEL,
-    responseMode: "sync",
+    responseMode: responseMode,
+    modelConfigs: {
+      temperature: 0.7,
+      topP: 1,
+      maxTokens: 2048,
+      presencePenalty: 0,
+      frequencyPenalty: 0,
+    },
   };
 
-  // Only include pluginIds if we have active plugins
-  if (activePlugins.length > 0) {
-    requestBody.pluginIds = activePlugins;
+  // Only include agentIds if we have active agents
+  if (activeAgents.length > 0) {
+    requestBody.agentIds = activeAgents;
   }
 
   const response = await fetch(
@@ -232,7 +262,7 @@ async function submitQuery(
 }
 
 /**
- * Main chat function - uses GPT-4o with relevant plugins based on query
+ * Main chat function - uses GPT-4.1 with relevant agents based on query
  */
 export async function chat(
   existingSessionId: string | null,
@@ -240,34 +270,28 @@ export async function chat(
   userId?: string,
   context?: { healthSummary?: string; recentSymptoms?: string[] }
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
-  // Get relevant plugins based on message content
-  const pluginIds = getRelevantPlugins(message);
-  console.log(`Selected plugins: ${pluginIds.length > 0 ? pluginIds.join(", ") : "none (using model only)"}`);
+  // Get relevant agents based on message content
+  const agentIds = getRelevantPlugins(message);
+  console.log(`Selected agents: ${agentIds.length > 0 ? agentIds.join(", ") : "none (using model only)"}`);
+
+  // Build context metadata for session
+  const contextMetadata: ContextMetadata[] = [];
+  if (userId) {
+    contextMetadata.push({ key: "userId", value: userId });
+  }
+  if (context?.healthSummary) {
+    contextMetadata.push({ key: "healthSummary", value: context.healthSummary });
+  }
+  if (context?.recentSymptoms && context.recentSymptoms.length > 0) {
+    contextMetadata.push({ key: "recentSymptoms", value: context.recentSymptoms.join(", ") });
+  }
 
   // Create session if needed
   const externalUserId = userId || `user-${Date.now()}`;
-  const sessionId = existingSessionId || (await createSession(externalUserId));
+  const sessionId = existingSessionId || (await createSession(externalUserId, agentIds, contextMetadata));
 
-  // Build enriched query with context
-  let enrichedQuery = message;
-  const contextParts = [];
-
-  if (context?.healthSummary) {
-    contextParts.push(`User Health Context: ${context.healthSummary}`);
-  }
-  if (context?.recentSymptoms && context.recentSymptoms.length > 0) {
-    contextParts.push(`Recent Symptoms: ${context.recentSymptoms.join(", ")}`);
-  }
-  if (userId) {
-    contextParts.push(`User ID: ${userId}`);
-  }
-
-  if (contextParts.length > 0) {
-    enrichedQuery = `[Context: ${contextParts.join(" | ")}]\n\n${message}`;
-  }
-
-  // Submit query with selected plugins
-  const response = await submitQuery(sessionId, enrichedQuery, pluginIds);
+  // Submit query with selected agents
+  const response = await submitQuery(sessionId, message, agentIds);
 
   return {
     response,
@@ -276,7 +300,7 @@ export async function chat(
 }
 
 /**
- * Upload media file for analysis via Media API
+ * Upload media file for analysis via Media API (URL-based)
  * Supports documents (PDF, DOC) and images (PNG, JPG)
  */
 export async function uploadMedia(
@@ -284,20 +308,22 @@ export async function uploadMedia(
   fileName: string,
   fileType: "document" | "image",
   sessionId?: string
-): Promise<{ mediaId: string; extractedTextUrl?: string; mimeType?: string }> {
+): Promise<{ mediaId: string; extractedTextUrl?: string; context?: string }> {
   const config = getConfig();
 
-  const pluginId =
+  const agentId =
     fileType === "document" ? MEDIA_PLUGINS.DOCUMENT : MEDIA_PLUGINS.IMAGE;
 
   console.log(`Uploading media: ${fileName} (${fileType})`);
-  console.log(`Using plugin: ${pluginId}`);
+  console.log(`Using agent: ${agentId}`);
 
   const requestBody: Record<string, unknown> = {
     url: fileUrl,
     name: fileName,
-    plugins: [pluginId],
+    agents: [agentId],
     responseMode: "sync",
+    createdBy: "health-companion",
+    updatedBy: "health-companion",
   };
 
   // Include sessionId if provided (links media to chat session)
@@ -305,7 +331,7 @@ export async function uploadMedia(
     requestBody.sessionId = sessionId;
   }
 
-  const response = await fetch(ONDEMAND_MEDIA_API, {
+  const response = await fetch(`${ONDEMAND_MEDIA_API}/public/file`, {
     method: "POST",
     headers: {
       apikey: config.apiKey,
@@ -325,50 +351,39 @@ export async function uploadMedia(
 
   return {
     mediaId: data.data?.id || data.id,
-    extractedTextUrl: data.data?.extractedTextUrl || data.extractedTextUrl,
-    mimeType: data.data?.mimeType || data.mimeType,
+    extractedTextUrl: data.data?.url || data.url,
+    context: data.data?.context || data.context,
   };
 }
 
 /**
- * Analyze a report using Media API + GPT-4o model
+ * Analyze a report using Media API + GPT-4.1 model
  */
 export async function analyzeReport(
   fileUrl: string,
   fileName: string,
   sessionId?: string
 ): Promise<OnDemandResponse> {
-  // Step 1: Upload and process media
-  const media = await uploadMedia(fileUrl, fileName, "document");
+  // Step 1: Upload and process media (this extracts text via Media API)
+  const media = await uploadMedia(fileUrl, fileName, "document", sessionId);
 
-  // Step 2: Fetch extracted text if available
-  let extractedText = "";
-  if (media.extractedTextUrl) {
-    try {
-      const textResponse = await fetch(media.extractedTextUrl);
-      if (textResponse.ok) {
-        extractedText = await textResponse.text();
-        // Limit text length
-        if (extractedText.length > 3000) {
-          extractedText = extractedText.substring(0, 3000) + "...";
-        }
-      }
-    } catch (e) {
-      console.error("Failed to fetch extracted text:", e);
-    }
+  // Step 2: Use extracted context from media response
+  let extractedText = media.context || "";
+
+  // Limit text length if too long
+  if (extractedText.length > 3000) {
+    extractedText = extractedText.substring(0, 3000) + "...";
   }
 
-  // Step 3: Create session and analyze with GPT-4o
-  const chatSessionId = sessionId || (await createSession(`report-analyzer-${Date.now()}`));
+  // Step 3: Create session and analyze with GPT-4.1
+  const agentIds = AGENT_PLUGINS.REPORT_ANALYZER ? [AGENT_PLUGINS.REPORT_ANALYZER] : [];
+  const chatSessionId = sessionId || (await createSession(`report-analyzer-${Date.now()}`, agentIds));
 
   const query = extractedText
     ? `Please analyze this medical report and explain the key findings. Remember: Do not diagnose, only explain what the values mean and suggest consulting a healthcare provider for interpretation.\n\n${extractedText}`
     : `A medical document "${fileName}" has been uploaded (ID: ${media.mediaId}). Please provide general guidance on how to interpret medical reports and remind the user to consult a healthcare provider.`;
 
-  // Use report analyzer plugin if available
-  const plugins = AGENT_PLUGINS.REPORT_ANALYZER ? [AGENT_PLUGINS.REPORT_ANALYZER] : [];
-
-  const response = await submitQuery(chatSessionId, query, plugins);
+  const response = await submitQuery(chatSessionId, query, agentIds);
 
   return response;
 }
