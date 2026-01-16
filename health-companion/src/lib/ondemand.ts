@@ -67,14 +67,10 @@ const BUILTIN_AGENTS = {
  * Uses OnDemand's built-in agents for knowledge retrieval
  */
 function getRelevantPlugins(_query: string): string[] {
-  // Use all 6 OnDemand built-in agents
+  // Use confirmed working OnDemand agents
   return [
     BUILTIN_AGENTS.MEDICAL_KNOWLEDGE,
     BUILTIN_AGENTS.HEALTH_KNOWLEDGE,
-    BUILTIN_AGENTS.DOCUMENT_PROCESSOR,
-    BUILTIN_AGENTS.IMAGE_PROCESSOR,
-    BUILTIN_AGENTS.KNOWLEDGE_BASE_1,
-    BUILTIN_AGENTS.KNOWLEDGE_BASE_2,
   ];
 
   /*
@@ -170,10 +166,6 @@ async function createSession(
     agentIds: [
       BUILTIN_AGENTS.MEDICAL_KNOWLEDGE,
       BUILTIN_AGENTS.HEALTH_KNOWLEDGE,
-      BUILTIN_AGENTS.DOCUMENT_PROCESSOR,
-      BUILTIN_AGENTS.IMAGE_PROCESSOR,
-      BUILTIN_AGENTS.KNOWLEDGE_BASE_1,
-      BUILTIN_AGENTS.KNOWLEDGE_BASE_2,
     ],
   };
 
