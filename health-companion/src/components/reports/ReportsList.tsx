@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { FileText, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { FileText, Trash2, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ReportAnalysis } from "@/components/reports/ReportAnalysis";
 
 interface Report {
   id: string;
@@ -17,6 +18,7 @@ interface Report {
   size: number;
   createdAt: string;
   storageKey: string;
+  reportType?: string | null;
 }
 
 interface ReportsListProps {
@@ -27,6 +29,7 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [analyzingReport, setAnalyzingReport] = useState<Report | null>(null);
 
   useEffect(() => {
     fetchReports();
@@ -92,56 +95,74 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {reports.map((report) => (
-        <Card key={report.id} className="overflow-hidden group">
-          <div className="p-4 flex items-start space-x-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FileText className="w-6 h-6 text-blue-600" />
+    <>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {reports.map((report) => (
+          <Card key={report.id} className="overflow-hidden group">
+            <div className="p-4 flex items-start space-x-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate" title={report.fileName}>
+                  {report.fileName}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {(report.size / 1024 / 1024).toFixed(2)} MB •{" "}
+                  {format(new Date(report.createdAt), "MMM d, yyyy")}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate" title={report.fileName}>
-                {report.fileName}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {(report.size / 1024 / 1024).toFixed(2)} MB •{" "}
-                {format(new Date(report.createdAt), "MMM d, yyyy")}
-              </p>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-100">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
-              asChild
-            >
-              <a href={report.storageKey} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-1.5" />
-                View
-              </a>
-            </Button>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
-              onClick={() => handleDelete(report.id)}
-              disabled={deletingId === report.id}
-            >
-              {deletingId === report.id ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Trash2 className="w-4 h-4 mr-1.5" />
-                  Delete
-                </>
-              )}
-            </Button>
-          </div>
-        </Card>
-      ))}
-    </div>
+            <div className="bg-gray-50 px-3 py-2 flex items-center justify-between border-t border-gray-100 gap-2">
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
+                  asChild
+                >
+                  <a href={report.storageKey} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-1.5" />
+                    View
+                  </a>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-8 px-2"
+                  onClick={() => setAnalyzingReport(report)}
+                >
+                  <Sparkles className="w-4 h-4 mr-1.5" />
+                  Analyze
+                </Button>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                onClick={() => handleDelete(report.id)}
+                disabled={deletingId === report.id}
+              >
+                {deletingId === report.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {analyzingReport && (
+        <ReportAnalysis 
+          report={analyzingReport} 
+          onClose={() => setAnalyzingReport(null)} 
+        />
+      )}
+    </>
   );
 }
