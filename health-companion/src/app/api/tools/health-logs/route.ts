@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { z } from "zod";
-
-// Schema for query parameters
-const querySchema = z.object({
-  userId: z.string().min(1),
-  limit: z.string().optional().transform(val => val ? parseInt(val, 10) : 5),
-});
 
 // CORS headers for OnDemand to call this endpoint
 const corsHeaders = {
@@ -37,16 +30,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "UserId is required" }, { status: 400, headers: corsHeaders });
     }
 
-    const result = querySchema.safeParse({
-      userId,
-      limit: searchParams.get("limit"),
-    });
-
-    if (!result.success) {
-      return NextResponse.json({ error: "Invalid parameters" }, { status: 400, headers: corsHeaders });
-    }
-
-    const { limit } = result.data;
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam ? parseInt(limitParam, 10) : 5;
 
     // 3. Fetch Data
     const logs = await prisma.healthLog.findMany({
