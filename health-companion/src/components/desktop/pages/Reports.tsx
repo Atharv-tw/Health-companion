@@ -33,7 +33,7 @@ export function DesktopReports() {
         </div>
 
         <div className="space-y-8">
-          <CeramicCard className="p-8 space-y-6 bg-white/60">
+          <CeramicCard tiltEffect={false} className="p-8 space-y-6 bg-white/60">
             <div className="space-y-2">
               <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tighter">Acquisition</h3>
               <p className="text-xs text-gray-400 font-light">Supported: PDF, JPG, PNG (Max 10MB)</p>
@@ -41,7 +41,7 @@ export function DesktopReports() {
             <UploadDropzone onUploadComplete={handleUploadComplete} />
           </CeramicCard>
 
-          <CeramicCard className="p-8 bg-blue-50/30 border-blue-100 space-y-4">
+          <CeramicCard tiltEffect={false} className="p-8 bg-blue-50/30 border-blue-100 space-y-4">
             <div className="flex items-center gap-3 text-blue-600">
               <ShieldCheck className="w-5 h-5" />
               <h3 className="text-sm font-bold uppercase tracking-widest">Privacy Protocol</h3>

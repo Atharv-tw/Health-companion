@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { upload } from "@vercel/blob/client";
-import { Upload, FileText, X, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -48,13 +49,11 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
   }, []);
 
   const validateAndSetFile = (file: File) => {
-    // Validate size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setError("File is too large. Max size is 10MB.");
       return;
     }
 
-    // Validate type
     const validTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
     if (!validTypes.includes(file.type)) {
       setError("Invalid file type. Only PDF, JPG, and PNG are allowed.");
@@ -112,8 +111,8 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
     <div className="w-full">
       <div
         className={cn(
-          "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
-          isDragActive ? "border-primary bg-primary/5" : "border-gray-200",
+          "border-2 border-dashed rounded-3xl p-8 text-center transition-all duration-300",
+          isDragActive ? "border-primary bg-primary/5" : "border-gray-100 bg-gray-50/30",
           error ? "border-red-300 bg-red-50" : ""
         )}
         onDragOver={handleDragOver}
@@ -132,27 +131,27 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
         {!file ? (
           <label
             htmlFor="file-upload"
-            className="flex flex-col items-center justify-center cursor-pointer space-y-2"
+            className="flex flex-col items-center justify-center cursor-pointer space-y-4"
           >
-            <div className="p-3 bg-gray-100 rounded-full">
-              <Upload className="w-6 h-6 text-gray-500" />
+            <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+              <Upload className="w-6 h-6 text-primary" />
             </div>
-            <div className="text-sm font-medium text-gray-900">
-              <span className="text-primary hover:underline">Click to upload</span> or drag and drop
+            <div className="space-y-1">
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-900">Document Upload</p>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">PDF, PNG, JPG up to 10MB</p>
             </div>
-            <p className="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
           </label>
         ) : (
-          <div className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-white rounded border border-gray-200">
-                <FileText className="w-5 h-5 text-blue-500" />
+          <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-primary/5 rounded-xl">
+                <FileText className="w-5 h-5 text-primary" />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                <p className="text-xs font-bold text-gray-900 truncate max-w-[150px] uppercase">
                   {file.name}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-[10px] text-gray-400 font-bold tracking-widest">
                   {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -160,31 +159,34 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
             {!isUploading && (
               <button
                 onClick={() => setFile(null)}
-                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-gray-400" />
               </button>
             )}
           </div>
         )}
 
         {error && (
-          <div className="flex items-center justify-center space-x-2 mt-4 text-sm text-red-600">
-            <AlertCircle className="w-4 h-4" />
+          <div className="flex items-center justify-center space-x-2 mt-6 text-[10px] font-bold uppercase tracking-widest text-red-500">
+            <AlertCircle className="w-3.5 h-3.5" />
             <span>{error}</span>
           </div>
         )}
 
         {isUploading && (
-          <div className="mt-4 space-y-2">
-            <Progress value={progress} className="h-2" />
-            <p className="text-xs text-gray-500 text-right">{Math.round(progress)}%</p>
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Uploading Documents...
+            </div>
+            <Progress value={progress} className="h-1" />
           </div>
         )}
 
         {file && !isUploading && (
-          <Button onClick={handleUpload} className="mt-4 w-full">
-            Upload Report
+          <Button onClick={handleUpload} className="mt-6 w-full h-12 rounded-2xl bg-gray-900 text-white font-bold uppercase tracking-widest text-[10px] shadow-xl">
+            Secure Upload
           </Button>
         )}
       </div>

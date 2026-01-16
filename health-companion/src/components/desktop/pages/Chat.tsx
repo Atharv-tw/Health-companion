@@ -52,12 +52,14 @@ export function DesktopChat() {
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 flex flex-col overflow-hidden pl-24">
       <ShimmerBackground />
       
-      {/* Immersive Top Bar - Edge to Edge */}
+      {/* Immersive Top Bar - Now properly aligned after Sidebar */}
       <div className="w-full border-b border-gray-100 bg-white/40 backdrop-blur-md px-10 py-5 flex items-center justify-between z-30">
         <div className="flex items-center gap-8">
+          {/* Spacer for Sidebar width (approximately 24px + original gap) */}
+          <div className="w-4 hidden lg:block" /> 
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.4em]">Oracle Active Stream</span>
             <span className="text-base font-bold text-gray-900 tracking-tight uppercase">Core Interface v2.4</span>
