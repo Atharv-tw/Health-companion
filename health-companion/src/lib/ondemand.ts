@@ -152,8 +152,7 @@ interface ContextMetadata {
 }
 
 /**
- * Create a new chat session
- * Note: agentIds/toolIds should NOT be passed here - they go in the query
+ * Create a new chat session with built-in OnDemand agents
  */
 async function createSession(
   externalUserId: string,
@@ -163,6 +162,10 @@ async function createSession(
 
   const body: Record<string, unknown> = {
     externalUserId: externalUserId,
+    agentIds: [
+      BUILTIN_AGENTS.MEDICAL_KNOWLEDGE,
+      BUILTIN_AGENTS.HEALTH_KNOWLEDGE,
+    ],
   };
 
   // Include contextMetadata if provided
