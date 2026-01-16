@@ -8,12 +8,24 @@ const bodySchema = z.object({
   userId: z.string().min(1),
 });
 
+// CORS headers for OnDemand to call this endpoint
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-app-secret, apikey",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authorization
+    // 1. Authorization - check for app secret or OnDemand API key
     const authHeader = request.headers.get("x-app-secret");
-    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET) {
-       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const apiKey = request.headers.get("apikey");
+    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET && !apiKey) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
     // 2. Parse Body
@@ -21,7 +33,7 @@ export async function POST(request: NextRequest) {
     const result = bodySchema.safeParse(body);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400, headers: corsHeaders });
     }
 
     const { reportId, userId } = result.data;
@@ -32,11 +44,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+      return NextResponse.json({ error: "Report not found" }, { status: 404, headers: corsHeaders });
     }
 
     if (report.userId !== userId) {
-      return NextResponse.json({ error: "Unauthorized access to report" }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized access to report" }, { status: 403, headers: corsHeaders });
     }
 
     // 4. Process with Media API
@@ -60,10 +72,10 @@ export async function POST(request: NextRequest) {
       type: report.reportType,
       extractedText: analysis.text,
       metadata: analysis.raw
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error("Tool Error [analyze-report]:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
   }
 }

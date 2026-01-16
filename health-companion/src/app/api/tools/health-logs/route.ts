@@ -8,19 +8,25 @@ const querySchema = z.object({
   limit: z.string().optional().transform(val => val ? parseInt(val, 10) : 5),
 });
 
+// CORS headers for OnDemand to call this endpoint
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-app-secret, apikey",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET(request: NextRequest) {
   try {
-    // 1. Authorization Check (API Key Protection)
-    // The OnDemand Agent must send this secret in the headers
+    // 1. Authorization Check - check for app secret or OnDemand API key
     const authHeader = request.headers.get("x-app-secret");
-    if (authHeader !== process.env.APP_SECRET && process.env.NODE_ENV === "production") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    // Allow bypassing auth in dev if needed, or better, require it always but set a default in .env
-    // For now, I'll assume if APP_SECRET is set, we check it.
-    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET) {
-       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const apiKey = request.headers.get("apikey");
+
+    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET && !apiKey) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
     // 2. Parse Query Parameters
@@ -31,7 +37,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400, headers: corsHeaders });
     }
 
     const { userId, limit } = result.data;
@@ -80,10 +86,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       summary: `Found ${logs.length} recent health logs for user.`,
       logs: formattedLogs
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error("Tool Error [health-logs]:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
   }
 }
