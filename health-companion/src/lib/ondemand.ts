@@ -55,15 +55,22 @@ function getConfig(): OnDemandConfig {
   return { apiKey };
 }
 
+// Built-in OnDemand agents (from Agent Builder export)
+const BUILTIN_AGENTS = {
+  MEDICAL_KNOWLEDGE: "agent-1712327325",
+  HEALTH_KNOWLEDGE: "agent-1713962163",
+};
+
 /**
  * Get relevant plugin IDs based on user query
- * Returns array of plugin IDs that should be used for this query
- * NOTE: Currently disabled - agents returning "invalid" errors
+ * Uses OnDemand's built-in agents for knowledge retrieval
  */
 function getRelevantPlugins(_query: string): string[] {
-  // TODO: Re-enable when agent IDs are validated on OnDemand
-  // For now, use just GPT-4.1 without agents
-  return [];
+  // Use OnDemand's built-in medical knowledge agents
+  return [
+    BUILTIN_AGENTS.MEDICAL_KNOWLEDGE,
+    BUILTIN_AGENTS.HEALTH_KNOWLEDGE,
+  ];
 
   /*
   const plugins: string[] = [];
@@ -205,14 +212,29 @@ async function submitQuery(
   console.log(`Active agents: ${activeAgents.length > 0 ? activeAgents.join(", ") : "none"}`);
   console.log(`Query: ${query.substring(0, 100)}...`);
 
+  const fulfillmentPrompt = `You are a Health Companion AI assistant. You provide health guidance and wellness support.
+
+RULES:
+- Give general health advice and wellness tips
+- Explain symptoms, conditions, and their common causes
+- Provide preventive health guidance
+- Use the user's health context when available
+- NEVER diagnose diseases or medical conditions
+- NEVER prescribe medications or dosages
+- NEVER recommend stopping prescribed medications
+- For emergencies, direct users to call emergency services (911)
+
+Always recommend consulting a healthcare professional for medical concerns.`;
+
   const requestBody: Record<string, unknown> = {
     query: query,
     endpointId: FULFILLMENT_MODEL,
     responseMode: responseMode,
     modelConfigs: {
-      temperature: 0.7,
-      topP: 1,
-      maxTokens: 2048,
+      fulfillmentPrompt: fulfillmentPrompt,
+      temperature: 0.3,
+      topP: 0.9,
+      maxTokens: 1024,
       presencePenalty: 0,
       frequencyPenalty: 0,
     },
