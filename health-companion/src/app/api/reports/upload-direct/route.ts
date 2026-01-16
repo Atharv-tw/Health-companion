@@ -5,6 +5,12 @@ import { prisma } from "@/lib/db";
 
 const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1";
 
+// Media Processing Plugin IDs (built-in OnDemand plugins for text extraction)
+const MEDIA_PLUGINS = {
+  DOCUMENT: "plugin-1713954536", // PDF, DOC processing
+  IMAGE: "plugin-1713958591",    // Image OCR processing
+};
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -29,7 +35,14 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(bytes).toString("base64");
     const dataUrl = `data:${file.type};base64,${base64}`;
 
-    // Upload to OnDemand Media API
+    // Determine which plugin to use based on file type
+    const isImage = file.type.startsWith("image/");
+    const isPDF = file.type === "application/pdf";
+    const processingPlugin = isImage ? MEDIA_PLUGINS.IMAGE : MEDIA_PLUGINS.DOCUMENT;
+
+    console.log(`Processing ${file.name} with plugin: ${processingPlugin} (${isImage ? "image" : "document"})`);
+
+    // Upload to OnDemand Media API with processing plugin for text extraction
     const mediaResponse = await fetch(`${ONDEMAND_MEDIA_API}/public/file`, {
       method: "POST",
       headers: {
@@ -39,7 +52,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         file: dataUrl,
         name: file.name,
+        agents: [processingPlugin], // Use plugin to extract text from document/image
         responseMode: "sync",
+        createdBy: "health-companion",
       }),
     });
 
@@ -53,20 +68,24 @@ export async function POST(request: NextRequest) {
     }
 
     const mediaData = await mediaResponse.json();
-    console.log("OnDemand upload response:", mediaData);
+    console.log("OnDemand upload response:", JSON.stringify(mediaData, null, 2));
 
-    // Get the file URL/ID from OnDemand response
+    // Get the file URL/ID and extracted content from OnDemand response
     const fileId = mediaData.data?.id || mediaData.id;
     const fileUrl = mediaData.data?.url || mediaData.url || `ondemand://${fileId}`;
+    const extractedText = mediaData.data?.context || mediaData.context || null;
 
-    // Save to database
+    console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
+
+    // Save to database with extracted text for AI analysis
     const report = await prisma.report.create({
       data: {
         fileName: file.name,
         mimeType: file.type,
         size: file.size,
         storageKey: fileUrl,
-        reportType: file.type.includes("pdf") ? "PDF" : "IMAGE",
+        reportType: isPDF ? "PDF" : isImage ? "IMAGE" : "DOCUMENT",
+        extractedText: extractedText, // Store extracted text for analysis
         userId: session.user.id,
       },
     });
@@ -77,6 +96,7 @@ export async function POST(request: NextRequest) {
         id: report.id,
         fileName: report.fileName,
         storageKey: report.storageKey,
+        hasExtractedText: !!extractedText,
       },
       ondemand: mediaData,
     });

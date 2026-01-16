@@ -65,16 +65,17 @@ model RiskAlert {
 }
 
 model Report {
-  id          String   @id @default(cuid())
-  fileName    String
-  mimeType    String
-  size        Int
-  storageKey  String
-  reportType  String?  // e.g., "blood_test", "xray", "prescription"
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  fileName      String
+  mimeType      String
+  size          Int
+  storageKey    String
+  reportType    String?  // e.g., "PDF", "IMAGE", "DOCUMENT"
+  extractedText String?  // Text extracted by OnDemand Media API plugins (OCR/PDF parsing)
+  createdAt     DateTime @default(now())
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Reminder {

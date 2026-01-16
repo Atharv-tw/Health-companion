@@ -318,10 +318,13 @@ export async function chat(
   existingSessionId: string | null,
   message: string,
   userId?: string,
-  context?: { healthSummary?: string; recentSymptoms?: string[]; userName?: string }
+  context?: { healthSummary?: string; recentSymptoms?: string[]; userName?: string },
+  customAgentIds?: string[] // Optional: override default agents with specific ones
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
-  // Get relevant agents based on message content
-  const agentIds = getRelevantPlugins(message);
+  // Use custom agents if provided, otherwise get relevant agents based on message
+  const agentIds = customAgentIds && customAgentIds.length > 0
+    ? customAgentIds
+    : getRelevantPlugins(message);
   console.log(`Selected agents: ${agentIds.length > 0 ? agentIds.join(", ") : "none (using model only)"}`);
 
   // Build context metadata for session
