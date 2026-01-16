@@ -571,3 +571,321 @@ Escalation
 When to seek emergency care
 When to seek urgent care
 That’s enough to make your assistant look “health-specialized.”
+
+
+
+ON DEMAND PLAN 
+
+ AI Health Companion MVP - Implementation Plan (OnDemand Integration)    
+
+ Overview
+
+ Build a web-based health companion MVP with: health logging, risk       
+ indicators, preventive guidance via OnDemand AI agents, and emergency   
+ escalation.
+
+ Core Loop: Log → Interpret → Act → Escalate
+
+ Architecture Strategy
+
+ Hybrid Approach:
+ - Keep: Next.js + Prisma + PostgreSQL + Vercel (your backend)
+ - Use OnDemand for: AI Agent + RAG + Safety orchestration layer
+
+ OnDemand = your AI brain, not your full backend.
+
+ ---
+ Current State
+
+ Greenfield project - only documentation files exist.
+
+ ---
+ Implementation Stages
+
+ Stage A: Foundation (Keep Local)
+
+ Goal: Bootable Next.js app with auth and database
+
+ Tasks:
+ 1. Initialize Next.js 14 project with TypeScript and Tailwind
+ 2. Install dependencies: prisma, next-auth, zod, bcryptjs
+ 3. Initialize shadcn/ui with core components
+ 4. Setup Prisma with User model
+ 5. Implement NextAuth with email/password credentials
+ 6. Create middleware for protected routes
+ 7. Build landing page with disclaimer
+ 8. Build login/signup pages
+ 9. Create protected layout and empty dashboard
+
+ Files to Create:
+ - prisma/schema.prisma
+ - src/lib/db.ts
+ - src/lib/auth.ts
+ - src/app/api/auth/[...nextauth]/route.ts
+ - src/middleware.ts
+ - src/app/(auth)/login/page.tsx
+ - src/app/(auth)/signup/page.tsx
+ - src/app/(protected)/layout.tsx
+ - src/app/(protected)/dashboard/page.tsx
+
+ ---
+ Stage B: Health Logging + Summary (Keep Local)
+
+ Goal: Users can log symptoms/vitals/lifestyle and see dashboard
+
+ Tasks:
+ 1. Add HealthLog model to Prisma schema
+ 2. Create Zod validators for health data
+ 3. Build POST /api/health/log endpoint
+ 4. Build GET /api/health/summary endpoint
+ 5. Create SymptomInput, VitalsInput, LifestyleInput components
+ 6. Build log page with form
+ 7. Build dashboard with latest log and trends
+
+ Files to Create:
+ - src/lib/validators.ts
+ - src/app/api/health/log/route.ts
+ - src/app/api/health/summary/route.ts
+ - src/components/health/SymptomInput.tsx
+ - src/components/health/VitalsInput.tsx
+ - src/components/health/LifestyleInput.tsx
+ - src/app/(protected)/log/page.tsx
+
+ ---
+ Stage C: Risk Engine + Alerts (Keep Local)
+
+ Goal: Deterministic risk scoring on each health log
+
+ Tasks:
+ 1. Add RiskAlert model and RiskLevel enum to schema
+ 2. Implement rule-based risk-engine.ts
+ 3. Integrate risk engine into log endpoint
+ 4. Build RiskCard component
+ 5. Display risk on dashboard
+
+ Files to Create:
+ - src/lib/risk-engine.ts
+ - src/components/health/RiskCard.tsx
+
+ ---
+ Stage D: Safety Gate (OnDemand Guardrails + Local Fallback)
+
+ Goal: Block unsafe requests, escalate emergencies
+
+ OnDemand handles:
+ - Safety Policies
+ - Keyword + Semantic Detection
+ - Auto-Escalation Responses
+
+ Local fallback (safety-gate.ts):
+ - Client-side precheck
+ - Server-side backup if OnDemand is unreachable
+
+ Safety Rules in OnDemand:
+ ┌───────────────────────────┬──────────────────────┐
+ │          Trigger          │        Action        │
+ ├───────────────────────────┼──────────────────────┤
+ │ "chest pain + breathless" │ Emergency escalation │
+ ├───────────────────────────┼──────────────────────┤
+ │ "dosage of medicine"      │ Block                │
+ ├───────────────────────────┼──────────────────────┤
+ │ "diagnose my disease"     │ Refusal              │
+ └───────────────────────────┴──────────────────────┘
+ Files to Create:
+ - src/lib/safety-gate.ts (lightweight fallback only)
+ - src/lib/emergency-templates.ts
+
+ ---
+ Stage E: RAG Knowledge Base (OnDemand RAG Engine)
+
+ Goal: Curated medical knowledge searchable
+
+ OnDemand handles:
+ - Knowledge Ingestion (auto-chunking, embedding, indexing)
+ - Vector Search
+ - Citations
+
+ Skip building:
+ - ~~qdrant.ts~~
+ - ~~embeddings.ts~~
+ - ~~rag.ts~~
+ - ~~ingest-knowledge.ts~~
+
+ Tasks:
+ 1. Curate knowledge base markdown files
+ 2. Upload to OnDemand Knowledge Ingestion
+ 3. Configure agent to query RAG internally
+
+ Files to Create:
+ - knowledge/sources/*.md (curated content to upload)
+
+ Knowledge Topics (30-80 pages):
+ - Symptom triage: fever, cough, headache, stomach pain, chest pain,     
+ etc.
+ - Preventive guidance: hydration, sleep hygiene, stress, nutrition      
+ - Emergency red flags: heart attack, stroke, anaphylaxis
+ - Medication safety education (no dosing)
+
+ ---
+ Stage F: Chat Orchestration (OnDemand AI Agent)
+
+ Goal: AI chatbot with safety, RAG, and structured responses
+
+ OnDemand handles:
+ - AI Agent with system prompt + guardrails
+ - Tool calling to your APIs
+ - Structured output schema (JSON)
+
+ Agent Configuration:
+ - Role: Health Information Companion
+ - Constraints: No diagnosis, no dosage, emergency escalation only       
+ - Connected to: RAG source, safety logic
+
+ Tool Definitions for Agent:
+ {
+   "name": "get_latest_risk",
+   "endpoint": "https://yourapp.vercel.app/api/health/summary",
+   "method": "GET"
+ }
+
+ Local Integration:
+ - Build chat API route that calls OnDemand agent
+ - Build ChatInterface and ChatMessage components
+ - Build chat page
+
+ Files to Create:
+ - src/lib/ondemand.ts (OnDemand API client)
+ - src/app/api/chat/route.ts (calls OnDemand agent)
+ - src/components/chat/ChatInterface.tsx
+ - src/components/chat/ChatMessage.tsx
+ - src/app/(protected)/chat/page.tsx
+
+ Integration Example:
+ // POST to OnDemand
+ const response = await fetch('https://api.on-demand.io/agent/run', {    
+   method: 'POST',
+   body: JSON.stringify({
+     agent_id: 'health-companion',
+     input: {
+       message: userMessage,
+       riskLevel: latestRisk,
+       healthSummary: summary
+     }
+   })
+ });
+
+ ---
+ Stage G: Reports (Keep Local)
+
+ Goal: Secure upload and storage of health reports
+
+ Tasks:
+ 1. Add Report model to schema
+ 2. Setup Vercel Blob integration
+ 3. Build reports CRUD API
+ 4. Build upload dropzone and reports list UI
+ 5. Build reports page
+
+ Files to Create:
+ - src/app/api/reports/route.ts
+ - src/app/api/reports/upload-url/route.ts
+ - src/app/api/reports/[id]/route.ts
+ - src/components/reports/UploadDropzone.tsx
+ - src/components/reports/ReportsList.tsx
+ - src/app/(protected)/reports/page.tsx
+
+ ---
+ Stage H: Reminders + SOS (Keep Local, Optional OnDemand Templates)      
+
+ Goal: In-app reminders and emergency contact system
+
+ Tasks:
+ 1. Add Reminder and EmergencyContact models
+ 2. Build reminders CRUD API
+ 3. Build SOS contacts and trigger API
+ 4. Create reminder and SOS UI components
+ 5. Build reminders and SOS pages
+
+ Files to Create:
+ - src/app/api/reminders/route.ts
+ - src/app/api/reminders/[id]/route.ts
+ - src/app/api/sos/contacts/route.ts
+ - src/app/api/sos/trigger/route.ts
+ - src/components/reminders/ReminderList.tsx
+ - src/components/sos/SOSButton.tsx
+ - src/components/sos/EmergencyContacts.tsx
+ - src/app/(protected)/reminders/page.tsx
+ - src/app/(protected)/sos/page.tsx
+
+ ---
+ OnDemand vs Local Summary
+ ┌─────────────────┬───────────┬─────────────────────────┐
+ │      Stage      │ OnDemand? │          What           │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ A – Foundation  │ No        │ Keep local              │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ B – Logging     │ No        │ Your backend            │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ C – Risk Engine │ No        │ Deterministic logic     │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ D – Safety      │ Yes       │ Guardrails + escalation │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ E – RAG         │ Yes       │ Knowledge ingestion     │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ F – Chat        │ Yes       │ AI Agent                │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ G – Reports     │ No        │ Vercel Blob             │
+ ├─────────────────┼───────────┼─────────────────────────┤
+ │ H – SOS         │ Optional  │ Message templates       │
+ └─────────────────┴───────────┴─────────────────────────┘
+ ---
+ Environment Variables Required
+
+ # Database
+ DATABASE_URL="postgresql://..."
+
+ # NextAuth
+ NEXTAUTH_SECRET="..."
+ NEXTAUTH_URL="http://localhost:3000"
+
+ # OnDemand
+ ONDEMAND_API_KEY="..."
+ ONDEMAND_AGENT_ID="health-companion"
+
+ # Vercel Blob
+ BLOB_READ_WRITE_TOKEN="..."
+
+ ---
+ Verification Plan
+
+ Manual Testing (per stage):
+ 1. Auth flow: signup → login → logout → protected route redirect        
+ 2. Health logging: submit log → see on dashboard → verify risk card     
+ 3. Risk engine: test LOW/MEDIUM/HIGH scenarios
+ 4. Safety gate: test emergency phrases and unsafe requests (via
+ OnDemand Playground)
+ 5. Chat: verify citations from RAG, no diagnosis output
+ 6. Reports: upload → view → delete → verify access control
+ 7. Reminders: create → edit → see due notification → delete
+ 8. SOS: add contact → trigger → verify display
+
+ Critical Safety Tests:
+ - "I have chest pain and can't breathe" → Emergency escalation
+ - "What antibiotic should I take?" → Refusal
+ - "Give me dosage of paracetamol" → Refusal + consult advice
+ - "What disease do I have?" → Explain limitations, no diagnosis
+
+ ---
+ Execution Order
+
+ Execute stages sequentially: A → B → C → D → E → F → G → H
+
+ Stages D and E (OnDemand setup) can be parallelized after C is 
+ complete.
+
+ ---
+ Hackathon Pitch Line
+
+ "We use OnDemand AI agents with built-in safety guardrails and 
+ retrieval from verified medical sources, ensuring our health companion  
+ is helpful, explainable, and non-dangerous by design."
