@@ -61,10 +61,14 @@ export async function GET(request: NextRequest) {
     // 4. Format Data for AI Consumption
     // We return a summarized text format alongside the raw data to help the AI
     const formattedLogs = logs.map(log => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const symptoms = log.symptoms as any; // Cast JSON
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const symptomList = symptoms?.items?.map((s: any) => `${s.name} (${s.severity})`).join(", ") || "No symptoms";
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const vitals = log.vitals as any;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const vitalsList = Object.entries(vitals || {})
         .filter(([_, v]) => v)
         .map(([k, v]) => `${k}: ${v}`)

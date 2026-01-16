@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { RiskCard, RiskAssessmentData, RiskBadge } from "@/components/health/RiskCard";
+import { CeramicCard } from "@/components/ui/CeramicCard";
+import { HealthOrb } from "@/components/ui/HealthOrb";
+import { Activity, MessageCircle, FileText, AlertCircle, Moon, Droplets } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface HealthSummary {
   summary: {
@@ -74,253 +75,195 @@ export default function DashboardPage() {
     fetchHealthSummary();
   }, []);
 
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
   };
 
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome{session?.user?.name ? `, ${session.user.name}` : ""}!
+    <motion.div 
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-8 max-w-6xl mx-auto"
+    >
+      {/* Header Section */}
+      <motion.div variants={item} className="text-center space-y-2 py-6">
+        <h1 className="text-4xl font-light tracking-tight text-gray-900">
+          Hello, <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 font-medium">
+            {session?.user?.name || "Friend"}
+          </span>
         </h1>
-        <p className="text-gray-600 mt-1">
-          Track your health and get personalized guidance.
-        </p>
+        <p className="text-gray-500 font-light text-lg">Your vital signs are looking stable today.</p>
+      </motion.div>
+
+      {/* Hero Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* 1. Health Status Orb (Centerpiece) */}
+        <CeramicCard className="md:col-span-1 flex flex-col items-center justify-center py-10 bg-white/60 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <h2 className="text-sm uppercase tracking-widest text-gray-400 mb-6 font-medium">Current Status</h2>
+          <HealthOrb status={healthData?.summary.latestRiskLevel as any || "LOW"} />
+          <p className="mt-6 text-2xl font-light text-gray-700">
+            {healthData?.summary.latestRiskLevel || "Optimal"}
+          </p>
+        </CeramicCard>
+
+        {/* 2. Latest Log Summary */}
+        <CeramicCard delay={0.1} className="md:col-span-2 flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-xl font-medium text-gray-800">Latest Insights</h3>
+              <p className="text-sm text-gray-400 mt-1">
+                {healthData?.latestLog 
+                  ? new Date(healthData.latestLog.createdAt).toLocaleDateString(undefined, { weekday: 'long', hour: 'numeric', minute: 'numeric' }) 
+                  : "No recent activity"}
+              </p>
+            </div>
+            <Link href="/log">
+               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium shadow-lg shadow-primary/20">
+                 + New Log
+               </motion.button>
+            </Link>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            {healthData?.latestLog?.symptoms.items.length ? (
+               <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                 <p className="text-xs text-gray-400 uppercase mb-2">Symptoms</p>
+                 <div className="flex flex-wrap gap-1">
+                   {healthData.latestLog.symptoms.items.slice(0, 3).map(s => (
+                     <span key={s.name} className="px-2 py-1 bg-white text-gray-600 rounded-md text-xs shadow-sm border border-gray-100">{s.name}</span>
+                   ))}
+                   {healthData.latestLog.symptoms.items.length > 3 && (
+                     <span className="px-2 py-1 text-xs text-gray-400">+More</span>
+                   )}
+                 </div>
+               </div>
+            ) : (
+              <div className="p-4 bg-green-50/50 rounded-2xl border border-green-100/50 flex items-center justify-center text-green-700 text-sm">
+                 All Clear
+              </div>
+            )}
+
+            <div className="space-y-2">
+               {/* Mini Vitals */}
+               <div className="flex justify-between items-center p-2 px-3 bg-blue-50/30 rounded-xl">
+                 <div className="flex items-center gap-2 text-blue-600">
+                   <Activity className="w-4 h-4" />
+                   <span className="text-xs font-medium">Heart</span>
+                 </div>
+                 <span className="text-sm font-bold text-gray-700">{healthData?.latestLog?.vitals?.heartRate || "--"} <span className="text-xs font-normal text-gray-400">bpm</span></span>
+               </div>
+               
+               {/* Mini Lifestyle */}
+               <div className="flex justify-between items-center p-2 px-3 bg-purple-50/30 rounded-xl">
+                  <div className="flex items-center gap-2 text-purple-600">
+                    <Moon className="w-4 h-4" />
+                    <span className="text-xs font-medium">Sleep</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-700">{healthData?.latestLog?.lifestyle?.sleepHours as number || "--"} <span className="text-xs font-normal text-gray-400">hr</span></span>
+               </div>
+            </div>
+          </div>
+        </CeramicCard>
+
       </div>
 
-      {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-gray-200 rounded animate-pulse" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <>
-          {/* Show Risk Card prominently if there's a recent assessment */}
-          {healthData?.latestLog?.riskAlert && (
-            <RiskCard
-              assessment={healthData.latestLog.riskAlert as RiskAssessmentData}
-              showDetails={healthData.latestLog.riskAlert.riskLevel !== "LOW"}
-            />
-          )}
+      {/* Metrics Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <StatsCard 
+            label="Total Logs" 
+            value={healthData?.summary.totalLogs || 0} 
+            icon={FileText} 
+            color="text-blue-500" 
+            delay={0.2}
+         />
+         <StatsCard 
+            label="Avg Heart Rate" 
+            value={healthData?.summary.vitals.averages.heartRate || "--"} 
+            unit="bpm"
+            icon={Activity} 
+            color="text-rose-500" 
+            delay={0.3}
+         />
+         <StatsCard 
+            label="Avg Sleep" 
+            value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"} 
+            unit="hrs"
+            icon={Moon} 
+            color="text-indigo-500" 
+            delay={0.4}
+         />
+         <StatsCard 
+            label="Hydration" 
+            value="Good" // Placeholder logic
+            icon={Droplets} 
+            color="text-cyan-500" 
+            delay={0.5}
+         />
+      </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Latest Health Log */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Latest Health Log</CardTitle>
-                <CardDescription>Your most recent health entry</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {healthData?.latestLog ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-500">
-                      {formatDate(healthData.latestLog.createdAt)}
-                    </p>
-                    {healthData.latestLog.symptoms.items.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {healthData.latestLog.symptoms.items.slice(0, 3).map((s) => (
-                          <Badge key={s.name} variant="secondary" className="text-xs">
-                            {s.name}
-                          </Badge>
-                        ))}
-                        {healthData.latestLog.symptoms.items.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{healthData.latestLog.symptoms.items.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500">No symptoms reported</p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No health logs yet.{" "}
-                    <Link href="/log" className="text-blue-600 hover:underline">
-                      Start logging
-                    </Link>
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+      {/* Quick Actions (Floating Pill Style) */}
+      <motion.div 
+        variants={item}
+        className="flex justify-center gap-4 py-8"
+      >
+         <QuickAction href="/chat" icon={MessageCircle} label="AI Chat" />
+         <QuickAction href="/reports" icon={FileText} label="Reports" />
+         <QuickAction href="/sos" icon={AlertCircle} label="SOS" alert />
+      </motion.div>
 
-            {/* Risk Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Risk Status</CardTitle>
-                <CardDescription>Current health risk assessment</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2">
-                  {healthData?.summary.latestRiskLevel ? (
-                    <RiskBadge riskLevel={healthData.summary.latestRiskLevel as "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY"} />
-                  ) : (
-                    <>
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
-                      <span className="text-sm font-medium text-green-700">No active alerts</span>
-                    </>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Based on your latest health log
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 7-Day Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">7-Day Summary</CardTitle>
-                <CardDescription>Health activity this week</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Logs</span>
-                    <span className="font-medium">{healthData?.summary.totalLogs || 0}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Symptoms Reported</span>
-                    <span className="font-medium">{healthData?.summary.symptoms.totalReported || 0}</span>
-                  </div>
-                  {healthData?.summary.lifestyle.averages.avgSleepHours && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Avg Sleep</span>
-                      <span className="font-medium">
-                        {healthData.summary.lifestyle.averages.avgSleepHours}h
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Common Symptoms */}
-          {healthData?.summary.symptoms.mostCommon && healthData.summary.symptoms.mostCommon.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Most Reported Symptoms (7 days)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {healthData.summary.symptoms.mostCommon.map((symptom) => (
-                    <Badge key={symptom.name} variant="outline">
-                      {symptom.name} ({symptom.count})
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Vitals Summary */}
-          {(healthData?.summary.vitals.averages.heartRate ||
-            healthData?.summary.vitals.averages.temperature ||
-            healthData?.summary.vitals.averages.spO2) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Average Vitals (7 days)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {healthData.summary.vitals.averages.heartRate && (
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {healthData.summary.vitals.averages.heartRate}
-                      </p>
-                      <p className="text-xs text-gray-500">Heart Rate (bpm)</p>
-                    </div>
-                  )}
-                  {healthData.summary.vitals.averages.temperature && (
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {healthData.summary.vitals.averages.temperature}°
-                      </p>
-                      <p className="text-xs text-gray-500">Temperature (°C)</p>
-                    </div>
-                  )}
-                  {healthData.summary.vitals.averages.bpSystolic && (
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {healthData.summary.vitals.averages.bpSystolic}/
-                        {healthData.summary.vitals.averages.bpDiastolic}
-                      </p>
-                      <p className="text-xs text-gray-500">Blood Pressure</p>
-                    </div>
-                  )}
-                  {healthData.summary.vitals.averages.spO2 && (
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {healthData.summary.vitals.averages.spO2}%
-                      </p>
-                      <p className="text-xs text-gray-500">SpO2</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </>
-      )}
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/log"
-              className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
-            >
-              <div className="text-2xl mb-2">📝</div>
-              <div className="font-medium">Log Health</div>
-              <div className="text-xs text-gray-500">Record symptoms & vitals</div>
-            </Link>
-            <Link
-              href="/chat"
-              className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
-            >
-              <div className="text-2xl mb-2">💬</div>
-              <div className="font-medium">Chat</div>
-              <div className="text-xs text-gray-500">Get health guidance</div>
-            </Link>
-            <Link
-              href="/reports"
-              className="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
-            >
-              <div className="text-2xl mb-2">📄</div>
-              <div className="font-medium">Reports</div>
-              <div className="text-xs text-gray-500">Upload medical reports</div>
-            </Link>
-            <Link
-              href="/sos"
-              className="p-4 border rounded-lg hover:bg-red-50 transition-colors text-center border-red-200"
-            >
-              <div className="text-2xl mb-2">🚨</div>
-              <div className="font-medium text-red-600">SOS</div>
-              <div className="text-xs text-gray-500">Emergency contacts</div>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </motion.div>
   );
+}
+
+function StatsCard({ label, value, unit, icon: Icon, color, delay }: any) {
+  return (
+    <CeramicCard delay={delay} className="flex flex-col items-center justify-center py-6 gap-2 text-center hover:scale-[1.02] transition-transform">
+       <div className={`p-3 rounded-full bg-white shadow-sm ${color} mb-1`}>
+         <Icon className="w-5 h-5" />
+       </div>
+       <div className="text-2xl font-light text-gray-900">
+         {value} <span className="text-xs text-gray-400 font-normal">{unit}</span>
+       </div>
+       <div className="text-xs font-medium uppercase tracking-wider text-gray-400">{label}</div>
+    </CeramicCard>
+  )
+}
+
+function QuickAction({ href, icon: Icon, label, alert }: any) {
+  return (
+    <Link href={href}>
+      <motion.div 
+        whileHover={{ y: -5 }}
+        whileTap={{ scale: 0.95 }}
+        className={`flex flex-col items-center gap-2 group cursor-pointer`}
+      >
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-colors ${alert ? 'bg-red-50 text-red-500 group-hover:bg-red-100' : 'bg-white text-gray-500 group-hover:bg-gray-50'}`}>
+           <Icon className="w-6 h-6" />
+        </div>
+        <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900 transition-colors">{label}</span>
+      </motion.div>
+    </Link>
+  )
 }
