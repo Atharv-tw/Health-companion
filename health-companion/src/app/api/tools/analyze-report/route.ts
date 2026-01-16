@@ -8,12 +8,24 @@ const bodySchema = z.object({
   userId: z.string().min(1),
 });
 
+// CORS headers for OnDemand to call this endpoint
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-app-secret, apikey",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authorization
+    // 1. Authorization - check for app secret or OnDemand API key
     const authHeader = request.headers.get("x-app-secret");
-    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET) {
-       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const apiKey = request.headers.get("apikey");
+    if (process.env.APP_SECRET && authHeader !== process.env.APP_SECRET && !apiKey) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
     // 2. Parse Body
@@ -21,7 +33,7 @@ export async function POST(request: NextRequest) {
     const result = bodySchema.safeParse(body);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400, headers: corsHeaders });
     }
 
     const { reportId, userId } = result.data;
@@ -32,25 +44,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+      return NextResponse.json({ error: "Report not found" }, { status: 404, headers: corsHeaders });
     }
 
     if (report.userId !== userId) {
-      return NextResponse.json({ error: "Unauthorized access to report" }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized access to report" }, { status: 403, headers: corsHeaders });
     }
 
     // 4. Process with Media API
-    // We assume storageKey is the URL for Vercel Blob (or closely related)
-    // If it's just a path, we might need to construct the URL.
-    // For Vercel Blob, typically the 'url' is what you want.
-    // I'll check if 'storageKey' looks like a URL.
-    
-    let fileUrl = report.storageKey;
-    if (!fileUrl.startsWith("http")) {
-      // If it's not a full URL, we might need a base URL or it's a relative path.
-      // But usually 'storageKey' in these implementations holds the public URL.
-      // I'll assume it is the URL for now.
-    }
+    const fileUrl = report.storageKey;
 
     const analysis = await processMedicalDocument(fileUrl);
 
@@ -60,10 +62,10 @@ export async function POST(request: NextRequest) {
       type: report.reportType,
       extractedText: analysis.text,
       metadata: analysis.raw
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error("Tool Error [analyze-report]:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
   }
 }
