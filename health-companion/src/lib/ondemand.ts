@@ -14,15 +14,14 @@ const FULFILLMENT_MODEL = "predefined-openai-gpt4.1";
 // Health Chat Agent ID - the main agent created on OnDemand
 const HEALTH_CHAT_AGENT_ID = process.env.ONDEMAND_HEALTH_AGENT_ID || "696a1151c7d6dfdf7e337c7e";
 
-// REST API Agent Plugin IDs - Additional specialized agents (optional)
+// REST API Agent Tool IDs - Created on OnDemand Agent Builder
 const AGENT_PLUGINS = {
   HEALTH_CHAT: HEALTH_CHAT_AGENT_ID,
-  HEALTH_SUMMARY: process.env.ONDEMAND_PLUGIN_HEALTH_SUMMARY || "",
-  RISK_ASSESSMENT: process.env.ONDEMAND_PLUGIN_RISK_ASSESSMENT || "",
-  USER_PROFILE: process.env.ONDEMAND_PLUGIN_USER_PROFILE || "",
-  HEALTH_LOGS: process.env.ONDEMAND_PLUGIN_HEALTH_LOGS || "",
-  REPORT_ANALYZER: process.env.ONDEMAND_PLUGIN_REPORT_ANALYZER || "",
-  REMINDER_MANAGER: process.env.ONDEMAND_PLUGIN_REMINDER_MANAGER || "",
+  HEALTH_SUMMARY: process.env.ONDEMAND_PLUGIN_HEALTH_SUMMARY || "tool-1768594008",
+  RISK_ASSESSMENT: process.env.ONDEMAND_PLUGIN_RISK_ASSESSMENT || "tool-1768594163",
+  HEALTH_LOGS: process.env.ONDEMAND_PLUGIN_HEALTH_LOGS || "tool-1768594275",
+  USER_PROFILE: process.env.ONDEMAND_PLUGIN_USER_PROFILE || "tool-1768594351",
+  REPORT_ANALYZER: process.env.ONDEMAND_PLUGIN_REPORT_ANALYZER || "tool-1768594455",
 };
 
 // Media Processing Plugin IDs (built-in OnDemand plugins)
@@ -121,16 +120,6 @@ function getRelevantPlugins(query: string): string[] {
     lowerQuery.includes("scan")
   ) {
     if (AGENT_PLUGINS.REPORT_ANALYZER) plugins.push(AGENT_PLUGINS.REPORT_ANALYZER);
-  }
-
-  // Reminder queries
-  if (
-    lowerQuery.includes("reminder") ||
-    lowerQuery.includes("medicine") ||
-    lowerQuery.includes("schedule") ||
-    lowerQuery.includes("take my")
-  ) {
-    if (AGENT_PLUGINS.REMINDER_MANAGER) plugins.push(AGENT_PLUGINS.REMINDER_MANAGER);
   }
 
   // Remove duplicates and empty strings
