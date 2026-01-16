@@ -1,8 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { Brain, Shield, Zap, Sparkles, ChevronLeft } from "lucide-react";
+import { Brain, Shield, Zap, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

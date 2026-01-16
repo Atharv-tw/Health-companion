@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import ReminderList from "@/components/reminders/ReminderList";
 import { Bell } from "lucide-react";
-import { motion } from "framer-motion";
 
 export function DesktopReminders() {
   const [reminders, setReminders] = useState([]);

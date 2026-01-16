@@ -37,7 +37,7 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
       setName(''); setPhone(''); setEmail(''); setRelationship('');
       setIsAdding(false);
       router.refresh();
-    } catch (error) {
+    } catch {
       alert('Failed to add contact (Max 3 allowed)');
     } finally {
       setLoading(false);

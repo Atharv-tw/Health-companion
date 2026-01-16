@@ -10,7 +10,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname) => {
+      onBeforeGenerateToken: async (_pathname) => {
         const session = await getServerSession(authOptions);
         
         if (!session?.user) {
@@ -24,7 +24,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           }),
         };
       },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
+      onUploadCompleted: async ({ blob }) => {
         // We will handle metadata saving in a separate API call from the client
         // to keep the upload flow simple and responsive.
         console.log('Upload completed:', blob.url);

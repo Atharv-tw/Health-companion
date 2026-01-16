@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  Home, 
-  MessageCircle, 
-  Activity, 
-  FileText, 
-  Bell, 
-  AlertCircle,
-  User
+import {
+  Home,
+  MessageCircle,
+  Activity,
+  FileText,
+  Bell,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

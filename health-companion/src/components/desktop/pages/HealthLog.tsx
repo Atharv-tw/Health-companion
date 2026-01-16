@@ -186,8 +186,8 @@ export function DesktopHealthLog() {
                     {currentStep === "review" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
                         <ReviewSection title="Symptomatic Data" data={formData.symptoms.items.map(i => i.name).join(", ") || "None"} />
-                        <ReviewSection title="Biometrics" data={Object.entries(formData.vitals || {}).filter(([_, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" | ") || "None"} />
-                        <ReviewSection title="Environment" data={Object.entries(formData.lifestyle || {}).filter(([_, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" | ") || "None"} />
+                        <ReviewSection title="Biometrics" data={Object.entries(formData.vitals || {}).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" | ") || "None"} />
+                        <ReviewSection title="Environment" data={Object.entries(formData.lifestyle || {}).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" | ") || "None"} />
                       </div>
                     )}
                   </div>

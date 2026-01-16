@@ -1,8 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { Database, ShieldCheck, Workflow, ChevronLeft, ArrowDown } from "lucide-react";
+import { Database, ShieldCheck, Workflow, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { Heart, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { Heart, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SignupPage() {

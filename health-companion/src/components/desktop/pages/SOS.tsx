@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import SOSButton from "@/components/sos/SOSButton";
 import EmergencyContacts from "@/components/sos/EmergencyContacts";
-import { AlertCircle, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 
 export function DesktopSOS() {

@@ -97,7 +97,7 @@ export function ChatInterface({ initialMessages = [], sessionId: initialSessionI
       if (data.shouldTriggerSOS) {
         setShowSOSPrompt(true);
       }
-    } catch (error) {
+    } catch {
       // Add error message
       const errorMsg: Message = {
         id: `error-${Date.now()}`,

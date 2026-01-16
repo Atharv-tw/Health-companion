@@ -18,7 +18,7 @@ export function MobileHealthLog() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>("symptoms");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessmentData | null>(null);
 
   const [formData, setFormData] = useState<HealthLogInput>({

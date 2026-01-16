@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { Heart, ArrowRight } from "lucide-react";
+import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
 function LoginForm() {

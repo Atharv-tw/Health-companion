@@ -4,7 +4,7 @@ import { LandingNavbar } from "@/components/layout/LandingNavbar";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { motion } from "framer-motion";
-import { Database, ShieldCheck, Workflow } from "lucide-react";
+import { Database, Workflow } from "lucide-react";
 
 export function DesktopMethodology() {
   return (

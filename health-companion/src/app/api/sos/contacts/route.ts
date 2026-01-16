@@ -11,7 +11,7 @@ const contactSchema = z.object({
   relationship: z.string().optional(),
 });
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

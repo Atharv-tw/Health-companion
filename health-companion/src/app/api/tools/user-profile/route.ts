@@ -53,8 +53,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404, headers: corsHeaders });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const profile = user.profile as any || {};
+    const profile = user.profile as Record<string, unknown> || {};
 
     // 4. Format
     return NextResponse.json({

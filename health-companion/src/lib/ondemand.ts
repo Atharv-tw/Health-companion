@@ -131,7 +131,7 @@ function getRelevantPlugins(query: string): string[] {
 }
 
 // Legacy function for backward compatibility
-function routeToAgent(query: string): string {
+function _routeToAgent(query: string): string {
   const plugins = getRelevantPlugins(query);
   return plugins[0] || "";
 }

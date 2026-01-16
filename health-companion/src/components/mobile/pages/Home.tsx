@@ -4,13 +4,12 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { 
-  Heart, 
-  ArrowRight, 
-  Activity, 
-  MessageSquare, 
+import {
+  Heart,
+  ArrowRight,
+  Activity,
+  MessageSquare,
   ShieldAlert,
-  Menu,
   UserCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, Sparkles, ArrowDown } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
@@ -44,7 +44,7 @@ export function DesktopChat() {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Protocol error. Unable to synchronize with the Oracle." }]);
     } finally {
       setIsLoading(false);

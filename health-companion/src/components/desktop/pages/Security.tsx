@@ -1,9 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { LandingNavbar } from "@/components/layout/LandingNavbar";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { ShieldCheck, Lock, Fingerprint, Cpu, Server, ChevronRight } from "lucide-react";
+import { ShieldCheck, Lock, Fingerprint, Cpu } from "lucide-react";
 
 export function DesktopSecurity() {
   return (

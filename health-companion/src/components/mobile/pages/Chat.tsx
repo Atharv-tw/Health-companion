@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, Sparkles, ChevronLeft } from "lucide-react";
+import { Send, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -44,7 +43,7 @@ export function MobileChat() {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Sync error." }]);
     } finally {
       setIsLoading(false);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ReminderList from "@/components/reminders/ReminderList";
-import { Bell, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

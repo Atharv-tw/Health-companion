@@ -15,7 +15,7 @@ const createReminderSchema = z.object({
   enabled: z.boolean().optional(),
 });
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {

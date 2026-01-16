@@ -4,8 +4,7 @@ import { LandingNavbar } from "@/components/layout/LandingNavbar";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { motion } from "framer-motion";
-import { Brain, Shield, Zap, Sparkles, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Brain, Shield, Zap, Sparkles } from "lucide-react";
 
 export function DesktopAbout() {
   return (
@@ -63,7 +62,7 @@ export function DesktopAbout() {
   );
 }
 
-function AboutValueCard({ icon, title, desc, delay }: any) {
+function AboutValueCard({ icon, title, desc, delay }: { icon: React.ReactNode; title: string; desc: string; delay: number }) {
   return (
     <CeramicCard delay={delay} className="p-10 flex flex-col items-center text-center space-y-6">
       <div style={{ transform: "translateZ(50px)" }} className="space-y-6 flex flex-col items-center">

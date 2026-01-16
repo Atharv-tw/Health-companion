@@ -4,7 +4,7 @@ import { useState } from "react";
 import { UploadDropzone } from "@/components/reports/UploadDropzone";
 import { ReportsList } from "@/components/reports/ReportsList";
 import { CeramicCard } from "@/components/ui/CeramicCard";
-import { ShieldCheck, FileText, Info } from "lucide-react";
+import { ShieldCheck, FileText } from "lucide-react";
 
 export function DesktopReports() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);

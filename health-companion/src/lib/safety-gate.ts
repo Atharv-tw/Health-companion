@@ -250,8 +250,6 @@ If this is a medical emergency, please call emergency services (911) immediately
  * This is a post-processing safety check
  */
 export function validateAIResponse(response: string): { safe: boolean; reason?: string } {
-  const lowerResponse = response.toLowerCase();
-
   // Check for definitive diagnosis statements
   const diagnosisIndicators = [
     /you\s*(definitely\s*)?have\s+(a\s+)?(cancer|diabetes|hiv|aids)/i,

@@ -1,7 +1,6 @@
 "use client";
 
 import { CeramicCard } from "@/components/ui/CeramicCard";
-import { Badge } from "@/components/ui/badge";
 import { AlertCircle, ShieldAlert, CheckCircle2, ArrowRight, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 

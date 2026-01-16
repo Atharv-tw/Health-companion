@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import SOSButton from "@/components/sos/SOSButton";
 import EmergencyContacts from "@/components/sos/EmergencyContacts";
-import { ChevronLeft, ShieldAlert } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ShieldCheck, Lock, Fingerprint, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

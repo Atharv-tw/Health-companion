@@ -67,7 +67,7 @@ export default function ReminderList({ initialReminders }: ReminderListProps) {
       setTitle('');
       setIsAdding(false);
       router.refresh();
-    } catch (error) {
+    } catch {
       alert('Failed to create reminder');
     } finally {
       setLoading(false);

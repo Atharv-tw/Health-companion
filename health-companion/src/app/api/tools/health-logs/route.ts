@@ -65,12 +65,11 @@ export async function GET(request: NextRequest) {
       const symptoms = log.symptoms as any; // Cast JSON
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const symptomList = symptoms?.items?.map((s: any) => `${s.name} (${s.severity})`).join(", ") || "No symptoms";
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const vitals = log.vitals as any;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const vitalsList = Object.entries(vitals || {})
-        .filter(([_, v]) => v)
+        .filter(([, v]) => v)
         .map(([k, v]) => `${k}: ${v}`)
         .join(", ") || "No vitals";
 

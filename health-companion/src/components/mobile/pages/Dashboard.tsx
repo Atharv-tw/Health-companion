@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { HealthOrb } from "@/components/ui/HealthOrb";
-import { Activity, MessageCircle, FileText, AlertCircle, Moon, Droplets, UserCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Activity, MessageCircle, FileText, AlertCircle, Moon, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
