@@ -7,63 +7,60 @@ import {
   Activity, 
   FileText, 
   Bell, 
-  AlertCircle 
+  AlertCircle,
+  User
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Log Health", href: "/log", icon: Activity },
-  { name: "Chat AI", href: "/chat", icon: MessageCircle },
+  { name: "Oracle Chat", href: "/chat", icon: MessageCircle, primary: true },
+  { name: "Vitality Profile", href: "/dashboard", icon: Home },
+  { name: "Health Log", href: "/log", icon: Activity },
   { name: "Reports", href: "/reports", icon: FileText },
   { name: "Reminders", href: "/reminders", icon: Bell },
-  { name: "SOS", href: "/sos", icon: AlertCircle, alert: true },
+  { name: "Guardian SOS", href: "/sos", icon: AlertCircle, alert: true },
 ];
 
 export function FloatingDock() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
       <motion.div 
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className="flex items-center gap-2 px-4 py-3 bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl shadow-blue-900/5 rounded-full"
+        className="flex items-center gap-3 px-5 py-3 bg-white/60 backdrop-blur-3xl border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-full"
       >
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
 
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} className="group relative">
               <motion.div
                 whileHover={{ scale: 1.1, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
                   "relative flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-300",
                   isActive 
-                    ? "bg-primary text-white shadow-lg shadow-primary/30" 
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-                  item.alert && !isActive && "text-red-500 hover:bg-red-50 hover:text-red-600"
+                    ? "bg-primary text-white shadow-xl shadow-primary/25" 
+                    : "text-gray-400 hover:text-gray-900 hover:bg-gray-100/50",
+                  item.alert && !isActive && "text-red-400 hover:text-red-600 hover:bg-red-50",
+                  item.primary && !isActive && "text-primary bg-primary/5 border border-primary/10"
                 )}
               >
                 <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5px]")} />
                 
-                {/* Active Indicator Dot */}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeDot"
-                    className="absolute -bottom-1 w-1 h-1 bg-white rounded-full opacity-0" 
-                  />
-                )}
-                
-                {/* Tooltip (Simple) */}
-                <span className="absolute -top-10 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all bg-black/80 text-white text-xs px-2 py-1 rounded">
-                  {item.name}
-                </span>
+                {/* Tooltip (Refined) */}
+                <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="bg-gray-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap">
+                    {item.name}
+                  </div>
+                  <div className="w-2 h-2 bg-gray-900 rotate-45 mx-auto -mt-1" />
+                </div>
               </motion.div>
             </Link>
           );
