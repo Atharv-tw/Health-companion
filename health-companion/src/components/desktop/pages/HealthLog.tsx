@@ -145,7 +145,7 @@ export function DesktopHealthLog() {
                   </div>
                 </div>
               ) : (
-                <CeramicCard className="p-10 space-y-10">
+                <CeramicCard tiltEffect={false} className="p-10 space-y-10">
                   <div className="space-y-2">
                     <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tighter">
                       {currentStep === "symptoms" && "Symptom Acquisition"}
