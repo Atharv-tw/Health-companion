@@ -1,68 +1,44 @@
-"use client";
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { redirect } from 'next/navigation';
+import SOSButton from '@/components/sos/SOSButton';
+import EmergencyContacts from '@/components/sos/EmergencyContacts';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+export default async function SOSPage() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.email) {
+      redirect('/login');
+  }
 
-export default function SOSPage() {
+  // Fetch contacts for both components
+  const contacts = await prisma.emergencyContact.findMany({
+    where: { 
+        userId: session.user.id 
+    },
+  });
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Emergency SOS</h1>
-        <p className="text-gray-600 mt-1">
-          Quick access to emergency contacts and services.
+    <div className="max-w-xl mx-auto space-y-12 p-8 text-center">
+      <div className="space-y-4">
+        <h1 className="text-4xl font-extrabold tracking-tight text-red-600">EMERGENCY SOS</h1>
+        <p className="text-lg text-gray-600">
+            Press the button below to instantly access your emergency contacts and alert services.
         </p>
       </div>
 
-      <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-red-700">Emergency Button</CardTitle>
-          <CardDescription className="text-red-600">
-            Use in case of medical emergency
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button size="lg" className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-xl">
-            SOS - Get Emergency Help
-          </Button>
-          <p className="text-sm text-red-600 text-center">
-            This will display your emergency contacts and nearby hospital information.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="py-8">
+        <SOSButton initialContacts={contacts} />
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Emergency Contacts</CardTitle>
-          <CardDescription>
-            Add up to 3 emergency contacts.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">
-            Emergency contacts management will be implemented in Stage G.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Find Nearby Help</CardTitle>
-          <CardDescription>
-            Locate hospitals and emergency services near you.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" className="w-full" asChild>
-            <a
-              href="https://www.google.com/maps/search/hospital+near+me"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Find Hospitals Near Me
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="text-left space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900 border-b pb-2">Manage Contacts</h2>
+        <EmergencyContacts contacts={contacts} />
+        <p className="text-xs text-gray-500 text-center pt-4">
+            * In a life-threatening emergency, always call local emergency services immediately if the app is unresponsive.
+        </p>
+      </div>
     </div>
   );
 }
