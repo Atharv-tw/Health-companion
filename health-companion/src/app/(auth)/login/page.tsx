@@ -61,7 +61,7 @@ function LoginForm() {
         <p className="text-gray-500 font-light">Securely enter the Health Companion Oracle.</p>
       </div>
 
-      <CeramicCard className="p-8">
+      <CeramicCard className="p-8" tiltEffect={false}>
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <motion.div 

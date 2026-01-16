@@ -119,7 +119,7 @@ export function DesktopDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* 1. Health Status Orb (Centerpiece) */}
-        <CeramicCard className="md:col-span-1 flex flex-col items-center justify-center py-10 bg-white/60 relative overflow-hidden group">
+        <CeramicCard tiltEffect={false} className="md:col-span-1 flex flex-col items-center justify-center py-10 bg-white/60 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <h2 className="text-sm uppercase tracking-widest text-gray-400 mb-6 font-medium">Current Status</h2>
           <HealthOrb status={healthData?.summary.latestRiskLevel as any || "LOW"} />
@@ -129,7 +129,7 @@ export function DesktopDashboard() {
         </CeramicCard>
 
         {/* 2. Latest Log Summary */}
-        <CeramicCard delay={0.1} className="md:col-span-2 flex flex-col justify-between">
+        <CeramicCard tiltEffect={false} delay={0.1} className="md:col-span-2 flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-xl font-medium text-gray-800">Latest Insights</h3>
@@ -239,7 +239,7 @@ export function DesktopDashboard() {
 
 function StatsCard({ label, value, unit, icon: Icon, color, delay }: any) {
   return (
-    <CeramicCard delay={delay} className="flex flex-col items-center justify-center py-6 gap-2 text-center hover:scale-[1.02] transition-transform">
+    <CeramicCard tiltEffect={false} delay={delay} className="flex flex-col items-center justify-center py-6 gap-2 text-center hover:scale-[1.02] transition-transform">
        <div className={`p-3 rounded-full bg-white shadow-sm ${color} mb-1`}>
          <Icon className="w-5 h-5" />
        </div>

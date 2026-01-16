@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { User, Sparkles, Database } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,37 +20,45 @@ export function DataStreamMessage({ message, delay = 0 }: DataStreamMessageProps
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, delay }}
-      className={cn(
-        "flex w-full mb-8 px-4",
-        isAI ? "justify-start" : "justify-end"
-      )}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="w-full"
     >
-      <div 
-        className={cn(
-          "max-w-[85%] md:max-w-[70%] p-6 rounded-[2.5rem] shadow-sm relative overflow-hidden",
-          isAI 
-            ? "bg-white/80 backdrop-blur-md border border-white/60 text-gray-800 rounded-tl-sm" 
-            : "bg-gray-100/50 backdrop-blur-sm border border-gray-200/50 text-gray-700 rounded-tr-sm"
-        )}
-      >
-        {/* Subtle Glow for AI Messages */}
-        {isAI && (
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-blue-400/20 to-transparent" />
-        )}
-
-        <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed">
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+      <div className={cn(
+        "group flex flex-col gap-3 p-6 transition-colors",
+        isAI ? "bg-white/40 border-y border-gray-100/50" : "bg-transparent"
+      )}>
+        {/* Role Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center border",
+              isAI ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-white text-gray-400 border-gray-200"
+            )}>
+              {isAI ? <Sparkles className="w-4 h-4" /> : <User className="w-4 h-4" />}
+            </div>
+            <span className={cn(
+              "text-[10px] font-bold uppercase tracking-[0.2em]",
+              isAI ? "text-primary" : "text-gray-400"
+            )}>
+              {isAI ? "Clinical Intelligence Output" : "Subjective Input"}
+            </span>
+          </div>
+          {isAI && (
+            <div className="flex items-center gap-2 px-2 py-1 bg-green-50 rounded-md border border-green-100">
+              <Database className="w-3 h-3 text-green-600" />
+              <span className="text-[9px] font-bold text-green-700 uppercase tracking-tighter">Verified RAG-8</span>
+            </div>
+          )}
         </div>
 
-        {/* Timestamp/Label */}
+        {/* Content */}
         <div className={cn(
-          "text-[9px] font-bold uppercase tracking-widest mt-4 opacity-40",
-          isAI ? "text-primary" : "text-gray-500"
+          "pl-11 prose prose-sm max-w-none",
+          isAI ? "text-gray-800 font-light" : "text-gray-500 font-normal"
         )}>
-          {isAI ? "Oracle Output" : "User Input"}
+          <ReactMarkdown>{message.content}</ReactMarkdown>
         </div>
       </div>
     </motion.div>

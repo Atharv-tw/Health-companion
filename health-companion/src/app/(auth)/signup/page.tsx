@@ -77,7 +77,7 @@ export default function SignupPage() {
           <p className="text-gray-500 font-light text-center">Establish your secure bio-digital identity.</p>
         </div>
 
-        <CeramicCard className="p-8">
+        <CeramicCard className="p-8" tiltEffect={false}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <motion.div 

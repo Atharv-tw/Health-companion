@@ -7,8 +7,7 @@ import {
   Activity, 
   FileText, 
   Bell, 
-  AlertCircle,
-  User
+  AlertCircle 
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,11 +26,18 @@ export function FloatingDock() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+    /* The trigger area: A wide invisible bar at the bottom */
+    <motion.div 
+      className="fixed bottom-0 left-0 right-0 h-24 z-50 flex justify-center items-center group"
+      initial="hidden"
+      whileHover="visible"
+    >
       <motion.div 
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        variants={{
+          hidden: { y: 100, opacity: 0 },
+          visible: { y: -32, opacity: 1 }
+        }}
+        transition={{ type: "spring", stiffness: 260, damping: 25 }}
         className="flex items-center gap-3 px-5 py-3 bg-white/60 backdrop-blur-3xl border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-full"
       >
         {NAV_ITEMS.map((item) => {
@@ -39,7 +45,7 @@ export function FloatingDock() {
           const Icon = item.icon;
 
           return (
-            <Link key={item.href} href={item.href} className="group relative">
+            <Link key={item.href} href={item.href} className="group/item relative">
               <motion.div
                 whileHover={{ scale: 1.1, y: -2 }}
                 whileTap={{ scale: 0.95 }}
@@ -54,8 +60,7 @@ export function FloatingDock() {
               >
                 <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5px]")} />
                 
-                {/* Tooltip (Refined) */}
-                <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <div className="absolute -top-12 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none">
                   <div className="bg-gray-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap">
                     {item.name}
                   </div>
@@ -66,6 +71,6 @@ export function FloatingDock() {
           );
         })}
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
