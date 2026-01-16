@@ -60,85 +60,20 @@ const BUILTIN_AGENTS = {
   // Knowledge agents - these 2 are confirmed working
   MEDICAL_KNOWLEDGE: "agent-1712327325",
   HEALTH_KNOWLEDGE: "agent-1713962163",
+  // Custom tool for chat
+  CHAT_TOOL: "tool-1747493398",
 };
 
 /**
  * Get relevant plugin IDs based on user query
- * Uses OnDemand's built-in agents for knowledge retrieval
+ * Uses built-in agents + custom chat tool
  */
 function getRelevantPlugins(_query: string): string[] {
-  // Use confirmed working OnDemand agents
   return [
     BUILTIN_AGENTS.MEDICAL_KNOWLEDGE,
     BUILTIN_AGENTS.HEALTH_KNOWLEDGE,
+    BUILTIN_AGENTS.CHAT_TOOL,
   ];
-
-  /*
-  const plugins: string[] = [];
-  const lowerQuery = _query.toLowerCase();
-
-  // Always include the main health chat agent
-  if (HEALTH_CHAT_AGENT_ID) {
-    plugins.push(HEALTH_CHAT_AGENT_ID);
-  }
-
-  // Include health summary agent if available
-  if (AGENT_PLUGINS.HEALTH_SUMMARY) {
-    plugins.push(AGENT_PLUGINS.HEALTH_SUMMARY);
-  }
-
-  // Symptom-related queries - include health logs
-  if (
-    lowerQuery.includes("symptom") ||
-    lowerQuery.includes("feeling") ||
-    lowerQuery.includes("pain") ||
-    lowerQuery.includes("ache") ||
-    lowerQuery.includes("fever") ||
-    lowerQuery.includes("headache") ||
-    lowerQuery.includes("nausea") ||
-    lowerQuery.includes("dizzy") ||
-    lowerQuery.includes("tired") ||
-    lowerQuery.includes("fatigue")
-  ) {
-    if (AGENT_PLUGINS.HEALTH_LOGS) plugins.push(AGENT_PLUGINS.HEALTH_LOGS);
-  }
-
-  // Risk-related queries
-  if (
-    lowerQuery.includes("risk") ||
-    lowerQuery.includes("score") ||
-    lowerQuery.includes("level") ||
-    lowerQuery.includes("assessment") ||
-    lowerQuery.includes("danger")
-  ) {
-    if (AGENT_PLUGINS.RISK_ASSESSMENT) plugins.push(AGENT_PLUGINS.RISK_ASSESSMENT);
-  }
-
-  // Profile/personal queries
-  if (
-    lowerQuery.includes("profile") ||
-    lowerQuery.includes("condition") ||
-    lowerQuery.includes("allergy") ||
-    lowerQuery.includes("medication") ||
-    lowerQuery.includes("my health")
-  ) {
-    if (AGENT_PLUGINS.USER_PROFILE) plugins.push(AGENT_PLUGINS.USER_PROFILE);
-  }
-
-  // Report/lab related queries
-  if (
-    lowerQuery.includes("report") ||
-    lowerQuery.includes("lab") ||
-    lowerQuery.includes("test result") ||
-    lowerQuery.includes("blood") ||
-    lowerQuery.includes("scan")
-  ) {
-    if (AGENT_PLUGINS.REPORT_ANALYZER) plugins.push(AGENT_PLUGINS.REPORT_ANALYZER);
-  }
-
-  // Remove duplicates and empty strings
-  return Array.from(new Set(plugins)).filter(Boolean);
-  */
 }
 
 // Legacy function for backward compatibility
@@ -429,7 +364,8 @@ export async function analyzeReport(
   }
 
   // Step 3: Create session and analyze with GPT-4.1
-  const agentIds = AGENT_PLUGINS.REPORT_ANALYZER ? [AGENT_PLUGINS.REPORT_ANALYZER] : [];
+  // Use built-in Health Knowledge agent for report analysis
+  const agentIds = [BUILTIN_AGENTS.HEALTH_KNOWLEDGE];
   const chatSessionId = sessionId || (await createSession(`report-analyzer-${Date.now()}`));
 
   const query = extractedText
