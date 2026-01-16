@@ -116,17 +116,23 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
             
             <div className="bg-gray-50 px-3 py-2 flex items-center justify-between border-t border-gray-100 gap-2">
               <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
-                  asChild
-                >
-                  <a href={report.storageKey} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-1.5" />
-                    View
-                  </a>
-                </Button>
+                {report.storageKey.startsWith('http') ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
+                    asChild
+                  >
+                    <a href={report.storageKey} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4 mr-1.5" />
+                      View
+                    </a>
+                  </Button>
+                ) : (
+                  <div className="flex items-center px-3 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                    Oracle ID: {report.storageKey.slice(0, 8)}...
+                  </div>
+                )}
 
                 <Button
                   variant="ghost"

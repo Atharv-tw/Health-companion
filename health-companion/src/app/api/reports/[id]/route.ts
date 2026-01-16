@@ -29,9 +29,15 @@ export async function DELETE(
 
     if (report.storageKey) {
         try {
-            await del(report.storageKey);
+            if (report.storageKey.startsWith('http')) {
+                await del(report.storageKey);
+            } else {
+                // Potential OnDemand Document Deletion Logic
+                // await deleteFromKnowledgeBase(report.storageKey);
+                console.log("OnDemand Document ID found, skipping Vercel Blob deletion:", report.storageKey);
+            }
         } catch (e) {
-            console.error("Failed to delete blob", e);
+            console.error("Failed to delete storage asset", e);
         }
     }
 
@@ -71,7 +77,17 @@ export async function GET(
       return new NextResponse('Report not found', { status: 404 });
     }
 
-    return NextResponse.redirect(report.storageKey);
+    // If it's a URL, redirect. If it's an OnDemand ID, we can't redirect directly.
+    if (report.storageKey.startsWith('http')) {
+        return NextResponse.redirect(report.storageKey);
+    }
+
+    // For OnDemand IDs, we might need to return the ID or a placeholder
+    return NextResponse.json({ 
+        ...report, 
+        viewUrl: null, 
+        message: "Document is stored in the Oracle Vector DB." 
+    });
 
   } catch (error) {
     console.error('REPORT_GET_ERROR', error);

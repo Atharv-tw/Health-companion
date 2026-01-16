@@ -1,52 +1,56 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { z } from 'zod';
+import { uploadToKnowledgeBase } from '@/lib/ondemand-media';
 
-const createReportSchema = z.object({
-  fileName: z.string(),
-  mimeType: z.string(),
-  size: z.number(),
-  storageKey: z.string(),
-  reportType: z.string().optional(),
-});
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const body = await req.json();
-    const { fileName, mimeType, size, storageKey, reportType } = createReportSchema.parse(body);
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
 
+    if (!file) {
+      return new NextResponse('No file provided', { status: 400 });
+    }
+
+    // 1. Upload directly to OnDemand Knowledge Base
+    // This stores the document in the Vector DB for AI querying
+    const { documentId } = await uploadToKnowledgeBase(file, session.user.id);
+
+    // 2. Save metadata to our local DB
     const report = await prisma.report.create({
       data: {
         userId: session.user.id,
-        fileName,
-        mimeType,
-        size,
-        storageKey,
-        reportType,
+        fileName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        storageKey: documentId, // The OnDemand Document ID is our storage key
+        reportType: 'clinical_vector_doc',
       },
     });
 
     return NextResponse.json(report);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return new NextResponse('Invalid request data', { status: 400 });
-    }
-    console.error('REPORT_POST_ERROR', error);
-    return new NextResponse('Internal Error', { status: 500 });
+  } catch (error: any) {
+    console.error('REPORT_ONDEMAND_INGESTION_ERROR:', error.message || error);
+    return new NextResponse(JSON.stringify({ 
+      error: 'Failed to ingest document into Vector DB', 
+      details: error.message 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 
-export async function GET(_req: Request) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 

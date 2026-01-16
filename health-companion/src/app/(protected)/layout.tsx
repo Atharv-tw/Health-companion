@@ -1,22 +1,28 @@
-import { FloatingDock } from "@/components/layout/FloatingDock";
+"use client";
+
+import { ClinicalSidebar } from "@/components/layout/ClinicalSidebar";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { useDevice } from "@/lib/useDevice";
+import { FloatingDock } from "@/components/layout/FloatingDock";
 
 export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isMobile } = useDevice();
+
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/10">
-        {/* Main Content Area */}
-        <main className="container mx-auto px-4 pt-8 pb-32 min-h-screen">
-            {/* We add pb-32 to ensure content isn't hidden behind the dock */}
+      <div className="min-h-screen bg-background relative selection:bg-primary/10">
+        {/* Render Sidebar for Desktop, FloatingDock for Mobile */}
+        {!isMobile && <ClinicalSidebar />}
+        {isMobile && <FloatingDock />}
+
+        {/* Main Content Area with offset for Sidebar on Desktop */}
+        <main className={isMobile ? "container mx-auto px-4 pt-8 pb-32 min-h-screen" : "pl-24 pt-0 min-h-screen"}>
             {children}
         </main>
-
-        {/* Floating Navigation */}
-        <FloatingDock />
       </div>
     </SessionProvider>
   );
