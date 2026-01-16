@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
-import { processMedicalDocument } from "@/lib/ondemand-media";
+import { analyzeReport } from "@/lib/ondemand";
 
 const bodySchema = z.object({
   reportId: z.string().min(1),
@@ -52,26 +52,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Process with Media API
-    // We assume storageKey is the URL for Vercel Blob (or closely related)
-    // If it's just a path, we might need to construct the URL.
-    // For Vercel Blob, typically the 'url' is what you want.
-    // I'll check if 'storageKey' looks like a URL.
-    
     const fileUrl = report.storageKey;
     if (!fileUrl.startsWith("http")) {
-      // If it's not a full URL, we might need a base URL or it's a relative path.
-      // But usually 'storageKey' in these implementations holds the public URL.
-      // I'll assume it is the URL for now.
+      return NextResponse.json({ error: "Invalid report URL" }, { status: 400, headers: corsHeaders });
     }
 
-    const analysis = await processMedicalDocument(fileUrl);
+    const analysis = await analyzeReport(fileUrl, report.fileName);
 
     return NextResponse.json({
       reportId: report.id,
       fileName: report.fileName,
       type: report.reportType,
-      extractedText: analysis.text,
-      metadata: analysis.raw
+      extractedText: analysis.answer,
+      citations: analysis.citations
     }, { headers: corsHeaders });
 
   } catch (error) {
