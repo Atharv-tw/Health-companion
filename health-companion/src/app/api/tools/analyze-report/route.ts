@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // For Vercel Blob, typically the 'url' is what you want.
     // I'll check if 'storageKey' looks like a URL.
     
-    let fileUrl = report.storageKey;
+    const fileUrl = report.storageKey;
     if (!fileUrl.startsWith("http")) {
       // If it's not a full URL, we might need a base URL or it's a relative path.
       // But usually 'storageKey' in these implementations holds the public URL.

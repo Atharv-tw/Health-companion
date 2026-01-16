@@ -7,19 +7,12 @@
 
 const ONDEMAND_API_BASE = "https://api.on-demand.io/media/v1";
 
-interface MediaProcessResponse {
-  id: string;
-  status: "processing" | "completed" | "failed";
-  text?: string;
-  data?: any;
-  error?: string;
-}
 
 /**
  * Process a file from a URL (e.g., Vercel Blob)
  * Returns the extracted text content.
  */
-export async function processMedicalDocument(fileUrl: string): Promise<{ text: string; raw: any }> {
+export async function processMedicalDocument(fileUrl: string): Promise<{ text: string; raw: unknown }> {
   const apiKey = process.env.ONDEMAND_API_KEY;
   if (!apiKey) throw new Error("ONDEMAND_API_KEY is not configured");
 

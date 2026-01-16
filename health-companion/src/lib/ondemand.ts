@@ -1,20 +1,18 @@
 /**
  * OnDemand API Client
  *
- * Handles communication with OnDemand.io AI Agent API.
- * 
- * ARCHITECTURE UPDATE:
- * Supports "Orchestrator Pattern". All user queries are sent to a single
- * Orchestrator Agent (configured in env). This agent autonomously delegates
- * to specialized sub-agents (Health Chat, Symptom Analyzer, etc.) which are
- * registered as "tools" within the OnDemand platform.
+ * Handles communication with OnDemand.io Workflow API.
+ *
+ * ARCHITECTURE:
+ * Uses Workflow Automation API. All user queries are sent to a workflow
+ * that contains the Orchestrator + 6 Specialist agents.
  */
 
-const ONDEMAND_API_BASE = "https://api.on-demand.io/chat/v1";
+const ONDEMAND_WORKFLOW_API = "https://api.on-demand.io/automation/api/workflow";
 
 interface OnDemandConfig {
   apiKey: string;
-  orchestratorId: string;
+  workflowId: string;
 }
 
 interface OnDemandResponse {
@@ -24,7 +22,6 @@ interface OnDemandResponse {
     title?: string;
     snippet?: string;
   }>;
-  sessionId?: string;
 }
 
 interface OnDemandError {
@@ -38,97 +35,59 @@ interface OnDemandError {
  */
 function getConfig(): OnDemandConfig {
   const apiKey = process.env.ONDEMAND_API_KEY;
-  // Prefer specific Orchestrator ID, fallback to generic Agent ID, then hardcoded default
-  const orchestratorId = process.env.ONDEMAND_ORCHESTRATOR_ID || process.env.ONDEMAND_AGENT_ID;
+  const workflowId = process.env.ONDEMAND_WORKFLOW_ID || process.env.ONDEMAND_ORCHESTRATOR_ID;
 
   if (!apiKey) {
     throw new Error("ONDEMAND_API_KEY is not configured");
   }
 
-  if (!orchestratorId) {
-     console.warn("ONDEMAND_ORCHESTRATOR_ID is not configured. Chat may fail.");
+  if (!workflowId) {
+    throw new Error("ONDEMAND_WORKFLOW_ID is not configured");
   }
 
   return {
     apiKey,
-    orchestratorId: orchestratorId || "health-companion-orchestrator",
+    workflowId,
   };
 }
 
 /**
- * Create a new chat session with OnDemand
+ * Execute the workflow with a user query
  */
-export async function createSession(userId?: string): Promise<string> {
-  const config = getConfig();
-
-  const response = await fetch(`${ONDEMAND_API_BASE}/sessions`, {
-    method: "POST",
-    headers: {
-      apikey: config.apiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      pluginIds: [],
-      // We tag the session with the user ID for debugging/tracking
-      externalUserId: userId ? `user-${userId}` : `health-companion-${Date.now()}`,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to create session: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.data?.id || data.sessionId || data.id;
-}
-
-/**
- * Send a query to the Orchestrator Agent
- */
-export async function sendQuery(
-  sessionId: string,
+export async function executeWorkflow(
   query: string,
-  userId?: string, // Vital for tools to work
+  userId?: string,
   context?: { healthSummary?: string; recentSymptoms?: string[] }
 ): Promise<OnDemandResponse> {
   const config = getConfig();
-  
+
   // Construct the enriched query with context
   let enrichedQuery = query;
 
-  // We inject context as a system-like instruction at the start
-  // The Orchestrator will use this to inform its routing/decisions
   const contextParts = [];
   if (context?.healthSummary) {
     contextParts.push(`[Context: User Health Summary: ${context.healthSummary}]`);
   }
   if (userId) {
-     // We explicitly tell the agent the User ID so it can call tools with it
-     contextParts.push(`[Context: Current User ID: ${userId}]`);
+    contextParts.push(`[Context: Current User ID: ${userId}]`);
   }
-  
+
   if (contextParts.length > 0) {
     enrichedQuery = `${contextParts.join("\n")}\n\n${query}`;
   }
 
-  const requestBody = {
-    endpointId: config.orchestratorId,
-    query: enrichedQuery,
-    pluginIds: ["plugin-1712327325", "plugin-1713962163"], // Medical knowledge plugins
-    responseMode: "sync",
-    // We can also pass variables if the API supports it, but enriching query is safer for now
-  };
-
   const response = await fetch(
-    `${ONDEMAND_API_BASE}/sessions/${sessionId}/query`,
+    `${ONDEMAND_WORKFLOW_API}/${config.workflowId}/execute`,
     {
       method: "POST",
       headers: {
         apikey: config.apiKey,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        query: enrichedQuery,
+        userId: userId,
+      }),
     }
   );
 
@@ -140,36 +99,41 @@ export async function sendQuery(
     } catch {
       errorData = { error: errorText };
     }
-    throw new Error(errorData.error || "Failed to get response from OnDemand");
+    throw new Error(errorData.error || "Failed to get response from OnDemand workflow");
   }
 
   const data = await response.json();
 
+  // Extract response from workflow result
+  // Workflow API may return different structure - adjust as needed
+  const answer = data.data?.output ||
+                 data.data?.answer ||
+                 data.output ||
+                 data.answer ||
+                 data.response ||
+                 data.result ||
+                 "I couldn't generate a response.";
+
   return {
-    answer: data.data?.answer || data.answer || data.response || "I couldn't generate a response.",
+    answer: typeof answer === 'string' ? answer : JSON.stringify(answer),
     citations: data.data?.citations || data.citations || [],
-    sessionId: sessionId,
   };
 }
 
 /**
- * Main chat interface
+ * Main chat interface (simplified - no sessions needed for workflow)
  */
 export async function chat(
-  sessionId: string | null,
+  sessionId: string | null, // Kept for backwards compatibility, not used
   message: string,
   userId?: string,
   context?: { healthSummary?: string; recentSymptoms?: string[] }
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
-  // Create session if not provided
-  const activeSessionId = sessionId || (await createSession(userId));
-
-  // Send query
-  const response = await sendQuery(activeSessionId, message, userId, context);
+  const response = await executeWorkflow(message, userId, context);
 
   return {
     response,
-    sessionId: activeSessionId,
+    sessionId: `workflow-${Date.now()}`, // Generate a pseudo session ID for compatibility
   };
 }
 
@@ -182,7 +146,6 @@ export function formatResponseWithCitations(response: OnDemandResponse): string 
   if (response.citations && response.citations.length > 0) {
     formatted += "\n\n---\n**Sources:**\n";
     response.citations.forEach((citation, index) => {
-      // Clean up title if it's a URL or generic
       const title = citation.title || citation.source;
       formatted += `${index + 1}. ${title}\n`;
     });

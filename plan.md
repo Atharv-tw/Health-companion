@@ -15,57 +15,75 @@ AI Health Companion is a web-based MVP that helps users log health signals, gene
 | Requirement | Target | Status |
 |-------------|--------|--------|
 | **Custom Tool Integrations** | Minimum 3 | 🎯 Planning 4 |
-| **OnDemand Agents** | Minimum 6 | 🎯 Planning 7 |
+| **OnDemand Agents** | Minimum 6 | ✅ 8 Agents |
 | **Chat API** | Mandatory | ✅ Implemented |
 | **Media API** | Mandatory | 🔄 To Implement |
 
 ---
 
-## 7 OnDemand Agents (Orchestrator Pattern)
+## 8 OnDemand Agents (Workflow Pattern)
 
-**Architecture:** User talks to ONE Orchestrator agent, which intelligently routes queries to specialized agents behind the scenes. The user never sees multiple agents - they just get smart, comprehensive answers.
+**Architecture:** Uses OnDemand Workflow with 8 LLM nodes. User query flows through Orchestrator → Specialists → Combiner → Output.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         USER                                 │
-│                    (Single Chat UI)                          │
+│                      API TRIGGER                             │
+│                   (User sends query)                         │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    ORCHESTRATOR AGENT                        │
+│                 LLM1: ORCHESTRATOR                           │
 │                                                              │
 │  • Analyzes user intent                                      │
-│  • Routes to 1 or more specialized agents                    │
-│  • Combines responses into unified answer                    │
-│  • Handles conversation continuity                           │
+│  • Routes query to appropriate specialists                   │
+│  • Handles emergency detection                               │
 └─────────────────────────────────────────────────────────────┘
                             │
             ┌───────────────┼───────────────┐
             ▼               ▼               ▼
     ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │   LLM2    │   │   LLM3    │   │   LLM4    │
     │  Health   │   │  Symptom  │   │   Risk    │
     │   Chat    │   │  Analyzer │   │ Interpreter│
     └───────────┘   └───────────┘   └───────────┘
             │               │               │
             ▼               ▼               ▼
     ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │   LLM5    │   │   LLM6    │   │   LLM7    │
     │ Nutrition │   │  Mental   │   │  Report   │
     │  Advisor  │   │ Wellness  │   │ Analyzer  │
     └───────────┘   └───────────┘   └───────────┘
+            │               │               │
+            └───────────────┼───────────────┘
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 LLM8: RESPONSE COMBINER                      │
+│                                                              │
+│  • Combines specialist responses                             │
+│  • Removes redundancy                                        │
+│  • Creates unified, coherent answer                          │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        OUTPUT                                │
+│              (Returns to user's chat)                        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Agent Roster
 
-| # | Agent Name | Role | Called By |
-|---|------------|------|-----------|
-| 1 | **Orchestrator** | Main router - analyzes intent, delegates to specialists, combines answers | User directly |
-| 2 | **Health Chat** | General health Q&A, wellness tips | Orchestrator |
-| 3 | **Symptom Analyzer** | Symptom patterns, severity assessment | Orchestrator |
-| 4 | **Risk Interpreter** | Explains risk levels from logged data | Orchestrator |
-| 5 | **Nutrition Advisor** | Diet, hydration, meal guidance | Orchestrator |
-| 6 | **Mental Wellness** | Stress, sleep, emotional support | Orchestrator |
-| 7 | **Report Analyzer** | Medical report/lab result explanations | Orchestrator |
+| # | Node | Agent Name | Role |
+|---|------|------------|------|
+| 1 | LLM1 | **Orchestrator** | Routes query to specialists, emergency detection |
+| 2 | LLM2 | **Health Chat** | General health Q&A, wellness tips |
+| 3 | LLM3 | **Symptom Analyzer** | Symptom patterns, severity assessment |
+| 4 | LLM4 | **Risk Interpreter** | Explains risk levels from logged data |
+| 5 | LLM5 | **Nutrition Advisor** | Diet, hydration, meal guidance |
+| 6 | LLM6 | **Mental Wellness** | Stress, sleep, emotional support |
+| 7 | LLM7 | **Report Analyzer** | Medical report/lab result explanations |
+| 8 | LLM8 | **Response Combiner** | Merges specialist outputs into unified answer |
 
 ### Example Routing
 
