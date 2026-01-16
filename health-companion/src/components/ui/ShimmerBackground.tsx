@@ -13,7 +13,7 @@ export function ShimmerBackground() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-[#FAFAF9]">
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-[#FAFAF9] pointer-events-none">
       {/* Base Iridescent Silk Layer */}
       <motion.div 
         animate={{ 

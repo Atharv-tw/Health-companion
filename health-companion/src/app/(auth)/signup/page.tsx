@@ -6,11 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { Heart, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-20 relative overflow-hidden">
       <ShimmerBackground />
       
-      <div className="w-full max-w-xl space-y-8 relative z-10">
+      <div className="w-full max-w-xl space-y-8 relative z-50">
         {/* Branding */}
         <div className="text-center space-y-4">
           <Link href="/" className="inline-flex items-center gap-2 group">
@@ -157,17 +157,36 @@ export default function SignupPage() {
                 "I acknowledge that Health Companion is an information system, not a clinical diagnostic tool. Critical symptoms require immediate human medical attention."
               </p>
               
-              <div className="flex items-center space-x-3">
-                <Checkbox
-                  id="consent"
-                  checked={acceptConsent}
-                  onCheckedChange={(checked) => setAcceptConsent(checked === true)}
-                  disabled={isLoading}
-                  className="h-5 w-5 border-2 border-primary data-[state=checked]:bg-primary"
-                />
-                <Label htmlFor="consent" className="text-[11px] text-gray-600 font-medium leading-tight cursor-pointer uppercase tracking-tight">
+              <div 
+                className="flex items-center space-x-3 pt-2 cursor-pointer group/consent"
+                onClick={() => !isLoading && setAcceptConsent(!acceptConsent)}
+              >
+                <div className="relative flex items-center justify-center">
+                  <div className={cn(
+                    "w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center",
+                    acceptConsent ? "bg-primary border-primary" : "bg-white border-gray-200 group-hover/consent:border-primary/50"
+                  )}>
+                    {acceptConsent && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2.5 h-2.5 bg-white rounded-sm"
+                      />
+                    )}
+                  </div>
+                  {/* Real hidden checkbox for form state/accessibility */}
+                  <input
+                    type="checkbox"
+                    id="consent"
+                    checked={acceptConsent}
+                    onChange={() => {}} // Controlled by parent div click
+                    className="sr-only"
+                    disabled={isLoading}
+                  />
+                </div>
+                <span className="text-[11px] text-gray-600 font-bold uppercase tracking-widest group-hover/consent:text-primary transition-colors select-none">
                   Agree to Safety Protocol
-                </Label>
+                </span>
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Reminder } from '@prisma/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,33 +15,64 @@ interface ReminderListProps {
 
 export default function ReminderList({ initialReminders }: ReminderListProps) {
   const router = useRouter();
+  const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(false);
   
+  // Sync local state with props when they change
+  useEffect(() => {
+    setReminders(initialReminders);
+  }, [initialReminders]);
+
   // Form State
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('08:00');
   const [type, setType] = useState<'MEDICINE' | 'WATER' | 'SLEEP' | 'CUSTOM'>('MEDICINE');
 
-  const handleToggle = async (id: string, currentStatus: boolean) => {
+  const fetchReminders = async () => {
     try {
-      await fetch(`/api/reminders/${id}`, {
+      const res = await fetch('/api/reminders');
+      if (res.ok) {
+        const data = await res.json();
+        setReminders(data);
+      }
+    } catch (e) {
+      console.error("Refresh failed", e);
+    }
+  };
+
+  const handleToggle = async (id: string, currentStatus: boolean) => {
+    // Optimistic update
+    setReminders(prev => prev.map(r => r.id === id ? { ...r, enabled: !currentStatus } : r));
+    
+    try {
+      const res = await fetch(`/api/reminders/${id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: !currentStatus }),
       });
+      if (!res.ok) throw new Error();
       router.refresh();
     } catch (error) {
       console.error('Toggle failed', error);
+      // Revert on failure
+      fetchReminders();
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this reminder?')) return;
+    
+    // Optimistic update
+    setReminders(prev => prev.filter(r => r.id !== id));
+
     try {
-      await fetch(`/api/reminders/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/reminders/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
       router.refresh();
     } catch (error) {
       console.error('Delete failed', error);
+      fetchReminders();
     }
   };
 
@@ -58,17 +89,26 @@ export default function ReminderList({ initialReminders }: ReminderListProps) {
           schedule: {
             frequency: 'daily',
             times: [time],
+            days: [], 
           },
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to create');
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Server error details:', errorData);
+        throw new Error('Failed to create');
+      }
 
       setTitle('');
       setIsAdding(false);
+      
+      // Refresh local data immediately
+      await fetchReminders();
       router.refresh();
-    } catch {
-      alert('Failed to create reminder');
+    } catch (err) {
+      console.error('Reminder creation error:', err);
+      alert('Failed to create reminder. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -143,13 +183,13 @@ export default function ReminderList({ initialReminders }: ReminderListProps) {
 
       {/* List */}
       <div className="grid gap-4">
-        {initialReminders.length === 0 && !isAdding && (
+        {reminders.length === 0 && !isAdding && (
              <div className="text-center py-10 text-gray-500">
                 <p>No reminders set. Add one to stay on track!</p>
               </div>
         )}
         
-        {initialReminders.map((reminder) => (
+        {reminders.map((reminder) => (
           <Card key={reminder.id} className={`flex flex-row items-center p-4 transition-opacity ${!reminder.enabled ? 'opacity-60' : ''}`}>
             <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4 shrink-0">
               {getIcon(reminder.type)}
