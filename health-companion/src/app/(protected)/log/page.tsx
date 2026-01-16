@@ -8,14 +8,16 @@ import { SymptomInput } from "@/components/health/SymptomInput";
 import { VitalsInput } from "@/components/health/VitalsInput";
 import { LifestyleInput } from "@/components/health/LifestyleInput";
 import { HealthLogInput } from "@/lib/validators";
+import { RiskCard, RiskAssessmentData } from "@/components/health/RiskCard";
 
-type Step = "symptoms" | "vitals" | "lifestyle" | "review";
+type Step = "symptoms" | "vitals" | "lifestyle" | "review" | "result";
 
 export default function LogPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>("symptoms");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [riskAssessment, setRiskAssessment] = useState<RiskAssessmentData | null>(null);
 
   const [formData, setFormData] = useState<HealthLogInput>({
     symptoms: { items: [], freeText: "" },
@@ -63,7 +65,9 @@ export default function LogPage() {
         throw new Error(data.error || "Failed to submit health log");
       }
 
-      router.push("/dashboard?logged=true");
+      // Show risk assessment result
+      setRiskAssessment(data.riskAssessment);
+      setCurrentStep("result");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -80,36 +84,38 @@ export default function LogPage() {
         </p>
       </div>
 
-      {/* Progress Steps */}
-      <div className="flex items-center justify-between">
-        {steps.map((step, index) => (
-          <div key={step.key} className="flex items-center">
-            <div
-              className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                index <= currentStepIndex
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-600"
-              }`}
-            >
-              {index + 1}
-            </div>
-            <span
-              className={`ml-2 text-sm hidden sm:inline ${
-                index <= currentStepIndex ? "text-blue-600 font-medium" : "text-gray-500"
-              }`}
-            >
-              {step.label}
-            </span>
-            {index < steps.length - 1 && (
+      {/* Progress Steps - Hidden on result */}
+      {currentStep !== "result" && (
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => (
+            <div key={step.key} className="flex items-center">
               <div
-                className={`w-12 sm:w-24 h-1 mx-2 ${
-                  index < currentStepIndex ? "bg-blue-600" : "bg-gray-200"
+                className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                  index <= currentStepIndex
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-600"
                 }`}
-              />
-            )}
-          </div>
-        ))}
-      </div>
+              >
+                {index + 1}
+              </div>
+              <span
+                className={`ml-2 text-sm hidden sm:inline ${
+                  index <= currentStepIndex ? "text-blue-600 font-medium" : "text-gray-500"
+                }`}
+              >
+                {step.label}
+              </span>
+              {index < steps.length - 1 && (
+                <div
+                  className={`w-12 sm:w-24 h-1 mx-2 ${
+                    index < currentStepIndex ? "bg-blue-600" : "bg-gray-200"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {error && (
         <div className="p-4 text-red-700 bg-red-50 border border-red-200 rounded-lg">
@@ -117,22 +123,23 @@ export default function LogPage() {
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {currentStep === "symptoms" && "What symptoms are you experiencing?"}
-            {currentStep === "vitals" && "Record your vital signs"}
-            {currentStep === "lifestyle" && "Lifestyle factors"}
-            {currentStep === "review" && "Review your entry"}
-          </CardTitle>
-          <CardDescription>
-            {currentStep === "symptoms" && "Select from common symptoms or add your own"}
-            {currentStep === "vitals" && "Enter any measurements you have (all optional)"}
-            {currentStep === "lifestyle" && "Help us understand factors affecting your health"}
-            {currentStep === "review" && "Confirm your health log before submitting"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {currentStep !== "result" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {currentStep === "symptoms" && "What symptoms are you experiencing?"}
+              {currentStep === "vitals" && "Record your vital signs"}
+              {currentStep === "lifestyle" && "Lifestyle factors"}
+              {currentStep === "review" && "Review your entry"}
+            </CardTitle>
+            <CardDescription>
+              {currentStep === "symptoms" && "Select from common symptoms or add your own"}
+              {currentStep === "vitals" && "Enter any measurements you have (all optional)"}
+              {currentStep === "lifestyle" && "Help us understand factors affecting your health"}
+              {currentStep === "review" && "Confirm your health log before submitting"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
           {currentStep === "symptoms" && (
             <SymptomInput
               value={formData.symptoms}
@@ -235,27 +242,56 @@ export default function LogPage() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Result Step - Show Risk Assessment */}
+      {currentStep === "result" && riskAssessment && (
+        <div className="space-y-6">
+          <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-800 font-medium">Health log submitted successfully!</p>
+          </div>
+
+          <RiskCard assessment={riskAssessment} showDetails={true} />
+        </div>
+      )}
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={handleBack}
-          disabled={currentStepIndex === 0}
-        >
-          Back
-        </Button>
-
-        {currentStep !== "review" ? (
-          <Button onClick={handleNext}>Next</Button>
-        ) : (
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Health Log"}
+      {currentStep !== "result" ? (
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            disabled={currentStepIndex === 0}
+          >
+            Back
           </Button>
-        )}
-      </div>
+
+          {currentStep !== "review" ? (
+            <Button onClick={handleNext}>Next</Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit Health Log"}
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="flex justify-center gap-4">
+          <Button variant="outline" onClick={() => router.push("/dashboard")}>
+            Back to Dashboard
+          </Button>
+          <Button
+            onClick={() => {
+              setCurrentStep("symptoms");
+              setFormData({ symptoms: { items: [], freeText: "" }, vitals: {}, lifestyle: {} });
+              setRiskAssessment(null);
+            }}
+          >
+            Log Another Entry
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RiskCard, RiskAssessmentData, RiskBadge } from "@/components/health/RiskCard";
 
 interface HealthSummary {
   summary: {
@@ -39,6 +40,14 @@ interface HealthSummary {
     symptoms: { items: Array<{ name: string; severity: string }>; freeText?: string };
     vitals: Record<string, number>;
     lifestyle: Record<string, unknown>;
+    riskAlert?: {
+      id: string;
+      riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
+      reasons: string[];
+      nextSteps: string[];
+      redFlags: string[];
+      consultAdvice: string;
+    };
   };
 }
 
@@ -65,20 +74,6 @@ export default function DashboardPage() {
     fetchHealthSummary();
   }, []);
 
-  const getRiskBadge = (level: string | null) => {
-    if (!level) return null;
-    const colors: Record<string, string> = {
-      LOW: "bg-green-100 text-green-800",
-      MEDIUM: "bg-yellow-100 text-yellow-800",
-      HIGH: "bg-orange-100 text-orange-800",
-      EMERGENCY: "bg-red-100 text-red-800",
-    };
-    return (
-      <Badge className={colors[level] || "bg-gray-100 text-gray-800"}>
-        {level}
-      </Badge>
-    );
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -115,6 +110,14 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
+          {/* Show Risk Card prominently if there's a recent assessment */}
+          {healthData?.latestLog?.riskAlert && (
+            <RiskCard
+              assessment={healthData.latestLog.riskAlert as RiskAssessmentData}
+              showDetails={healthData.latestLog.riskAlert.riskLevel !== "LOW"}
+            />
+          )}
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Latest Health Log */}
             <Card>
@@ -165,7 +168,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="flex items-center space-x-2">
                   {healthData?.summary.latestRiskLevel ? (
-                    getRiskBadge(healthData.summary.latestRiskLevel)
+                    <RiskBadge riskLevel={healthData.summary.latestRiskLevel as "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY"} />
                   ) : (
                     <>
                       <div className="w-3 h-3 rounded-full bg-green-500" />
