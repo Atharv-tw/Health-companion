@@ -60,19 +60,19 @@ const BUILTIN_AGENTS = {
   // Knowledge agents - these 2 are confirmed working
   MEDICAL_KNOWLEDGE: "agent-1712327325",
   HEALTH_KNOWLEDGE: "agent-1713962163",
-  // Custom tool for chat
-  CHAT_TOOL: "tool-1747493398",
+  // Custom chat agent
+  CHAT_AGENT: "agent-1747493398",
 };
 
 /**
  * Get relevant plugin IDs based on user query
- * Uses built-in agents + custom chat tool
+ * Uses 3 OnDemand agents
  */
 function getRelevantPlugins(_query: string): string[] {
   return [
     BUILTIN_AGENTS.MEDICAL_KNOWLEDGE,
     BUILTIN_AGENTS.HEALTH_KNOWLEDGE,
-    BUILTIN_AGENTS.CHAT_TOOL,
+    BUILTIN_AGENTS.CHAT_AGENT,
   ];
 }
 
