@@ -12,9 +12,10 @@ const updateReminderSchema = z.object({
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
+  const { id } = await params;
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,7 +27,7 @@ export async function PUT(
 
     // Verify ownership
     const existing = await prisma.reminder.findUnique({
-        where: { id: params.id }
+        where: { id }
     });
 
     if (!existing) {
@@ -39,7 +40,7 @@ export async function PUT(
 
     const reminder = await prisma.reminder.update({
       where: {
-        id: params.id,
+        id,
       },
       data: body,
     });
@@ -56,9 +57,10 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
+  const { id } = await params;
 
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -66,7 +68,7 @@ export async function DELETE(
 
   try {
     const existing = await prisma.reminder.findUnique({
-        where: { id: params.id }
+        where: { id }
     });
 
     if (!existing) {
@@ -79,7 +81,7 @@ export async function DELETE(
 
     await prisma.reminder.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
 
