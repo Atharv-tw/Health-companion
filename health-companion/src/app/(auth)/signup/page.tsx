@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { Heart, ShieldAlert } from "lucide-react";
@@ -156,17 +157,14 @@ export default function SignupPage() {
                 "I acknowledge that Health Companion is an information system, not a clinical diagnostic tool. Critical symptoms require immediate human medical attention."
               </p>
               
-              <div className="flex items-start space-x-3">
-                <div className="relative flex items-center h-5">
-                  <input
-                    type="checkbox"
-                    id="consent"
-                    checked={acceptConsent}
-                    onChange={(e) => setAcceptConsent(e.target.checked)}
-                    className="w-4 h-4 rounded-full border-gray-300 text-primary focus:ring-primary transition-all cursor-pointer"
-                    disabled={isLoading}
-                  />
-                </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="consent"
+                  checked={acceptConsent}
+                  onCheckedChange={(checked) => setAcceptConsent(checked === true)}
+                  disabled={isLoading}
+                  className="h-5 w-5 border-2 border-primary data-[state=checked]:bg-primary"
+                />
                 <Label htmlFor="consent" className="text-[11px] text-gray-600 font-medium leading-tight cursor-pointer uppercase tracking-tight">
                   Agree to Safety Protocol
                 </Label>
