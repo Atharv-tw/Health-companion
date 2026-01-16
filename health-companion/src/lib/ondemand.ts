@@ -204,7 +204,8 @@ async function submitQuery(
   sessionId: string,
   query: string,
   agentIds: string[] = [],
-  responseMode: "sync" | "stream" = "sync"
+  responseMode: "sync" | "stream" = "sync",
+  context?: { healthSummary?: string; recentSymptoms?: string[]; userName?: string }
 ): Promise<OnDemandResponse> {
   const config = getConfig();
 
@@ -216,19 +217,44 @@ async function submitQuery(
   console.log(`Active agents: ${activeAgents.length > 0 ? activeAgents.join(", ") : "none"}`);
   console.log(`Query: ${query.substring(0, 100)}...`);
 
-  const fulfillmentPrompt = `You are a Health Companion AI assistant. You provide health guidance and wellness support.
+  // Build personalized fulfillment prompt with user context
+  const userName = context?.userName ? context.userName : "there";
+  const userContextBlock = context?.healthSummary
+    ? `\n\nUSER HEALTH CONTEXT:\n${context.healthSummary}`
+    : "";
 
-RULES:
-- Give general health advice and wellness tips
-- Explain symptoms, conditions, and their common causes
-- Provide preventive health guidance
-- Use the user's health context when available
-- NEVER diagnose diseases or medical conditions
-- NEVER prescribe medications or dosages
-- NEVER recommend stopping prescribed medications
-- For emergencies, direct users to call emergency services (911)
+  const fulfillmentPrompt = `You are a compassionate and knowledgeable Health Companion AI assistant named "HealthBuddy". You help users understand their health, track wellness patterns, and make informed decisions about their wellbeing.
 
-Always recommend consulting a healthcare professional for medical concerns.`;
+PERSONALITY:
+- Warm, empathetic, and supportive tone
+- Clear and easy-to-understand explanations (avoid excessive medical jargon)
+- Proactive in offering helpful follow-up suggestions
+- Acknowledge the user's concerns before providing information
+
+CAPABILITIES:
+- Explain symptoms, conditions, and their common causes in plain language
+- Provide evidence-based preventive health guidance and wellness tips
+- Help users understand their health trends and patterns
+- Offer lifestyle recommendations (nutrition, exercise, sleep, stress management)
+- Explain what medical tests and reports typically measure
+- Provide first aid guidance for minor issues
+
+STRICT SAFETY RULES (NEVER VIOLATE):
+- NEVER diagnose diseases or medical conditions - only explain possibilities
+- NEVER prescribe medications, dosages, or treatment plans
+- NEVER recommend starting, stopping, or changing prescribed medications
+- NEVER provide advice that could delay emergency care
+- For emergencies (chest pain, difficulty breathing, severe bleeding, stroke symptoms), IMMEDIATELY direct to call 911 or local emergency services
+
+RESPONSE GUIDELINES:
+- Start by acknowledging the user's question or concern
+- Provide helpful, actionable information
+- Use bullet points or numbered lists for clarity when appropriate
+- End with a relevant follow-up question or suggestion when helpful
+- Always include "Please consult a healthcare professional" for medical concerns
+- If user shares symptoms, ask clarifying questions about duration, severity, and associated factors
+
+The user's name is ${userName}.${userContextBlock}`;
 
   const requestBody: Record<string, unknown> = {
     query: query,
@@ -236,11 +262,11 @@ Always recommend consulting a healthcare professional for medical concerns.`;
     responseMode: responseMode,
     modelConfigs: {
       fulfillmentPrompt: fulfillmentPrompt,
-      temperature: 0.3,
+      temperature: 0.5,  // Slightly higher for more natural responses
       topP: 0.9,
-      maxTokens: 1024,
-      presencePenalty: 0,
-      frequencyPenalty: 0,
+      maxTokens: 1500,   // Increased for more detailed responses
+      presencePenalty: 0.1,  // Slight penalty to reduce repetition
+      frequencyPenalty: 0.1, // Slight penalty to encourage diverse language
     },
   };
 
@@ -292,7 +318,7 @@ export async function chat(
   existingSessionId: string | null,
   message: string,
   userId?: string,
-  context?: { healthSummary?: string; recentSymptoms?: string[] }
+  context?: { healthSummary?: string; recentSymptoms?: string[]; userName?: string }
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
   // Get relevant agents based on message content
   const agentIds = getRelevantPlugins(message);
@@ -314,8 +340,8 @@ export async function chat(
   const externalUserId = userId || `user-${Date.now()}`;
   const sessionId = existingSessionId || (await createSession(externalUserId, contextMetadata));
 
-  // Submit query with selected agents
-  const response = await submitQuery(sessionId, message, agentIds);
+  // Submit query with selected agents and context
+  const response = await submitQuery(sessionId, message, agentIds, "sync", context);
 
   return {
     response,

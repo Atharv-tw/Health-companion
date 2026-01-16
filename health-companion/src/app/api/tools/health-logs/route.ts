@@ -31,16 +31,22 @@ export async function GET(request: NextRequest) {
 
     // 2. Parse Query Parameters
     const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json({ error: "UserId is required" }, { status: 400, headers: corsHeaders });
+    }
+
     const result = querySchema.safeParse({
-      userId: searchParams.get("userId"),
+      userId,
       limit: searchParams.get("limit"),
     });
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error.issues[0].message }, { status: 400, headers: corsHeaders });
+      return NextResponse.json({ error: "Invalid parameters" }, { status: 400, headers: corsHeaders });
     }
 
-    const { userId, limit } = result.data;
+    const { limit } = result.data;
 
     // 3. Fetch Data
     const logs = await prisma.healthLog.findMany({
