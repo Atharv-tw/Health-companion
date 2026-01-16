@@ -6,7 +6,140 @@ AI Health Companion is a web-based MVP that helps users log health signals, gene
 
 **Core Loop:** Log → Interpret → Act → Escalate
 
-**Target:** On-Demand.io Hackathon Track - leveraging OnDemand Agents for safe, hallucination-free health guidance with RAG retrieval and automated guardrails.
+**Target:** On-Demand.io Hackathon Track
+
+---
+
+## Hackathon Requirements (CRITICAL)
+
+| Requirement | Target | Status |
+|-------------|--------|--------|
+| **Custom Tool Integrations** | Minimum 3 | 🎯 Planning 4 |
+| **OnDemand Agents** | Minimum 6 | 🎯 Planning 7 |
+| **Chat API** | Mandatory | ✅ Implemented |
+| **Media API** | Mandatory | 🔄 To Implement |
+
+---
+
+## 7 OnDemand Agents (Orchestrator Pattern)
+
+**Architecture:** User talks to ONE Orchestrator agent, which intelligently routes queries to specialized agents behind the scenes. The user never sees multiple agents - they just get smart, comprehensive answers.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         USER                                 │
+│                    (Single Chat UI)                          │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    ORCHESTRATOR AGENT                        │
+│                                                              │
+│  • Analyzes user intent                                      │
+│  • Routes to 1 or more specialized agents                    │
+│  • Combines responses into unified answer                    │
+│  • Handles conversation continuity                           │
+└─────────────────────────────────────────────────────────────┘
+                            │
+            ┌───────────────┼───────────────┐
+            ▼               ▼               ▼
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │  Health   │   │  Symptom  │   │   Risk    │
+    │   Chat    │   │  Analyzer │   │ Interpreter│
+    └───────────┘   └───────────┘   └───────────┘
+            │               │               │
+            ▼               ▼               ▼
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │ Nutrition │   │  Mental   │   │  Report   │
+    │  Advisor  │   │ Wellness  │   │ Analyzer  │
+    └───────────┘   └───────────┘   └───────────┘
+```
+
+### Agent Roster
+
+| # | Agent Name | Role | Called By |
+|---|------------|------|-----------|
+| 1 | **Orchestrator** | Main router - analyzes intent, delegates to specialists, combines answers | User directly |
+| 2 | **Health Chat** | General health Q&A, wellness tips | Orchestrator |
+| 3 | **Symptom Analyzer** | Symptom patterns, severity assessment | Orchestrator |
+| 4 | **Risk Interpreter** | Explains risk levels from logged data | Orchestrator |
+| 5 | **Nutrition Advisor** | Diet, hydration, meal guidance | Orchestrator |
+| 6 | **Mental Wellness** | Stress, sleep, emotional support | Orchestrator |
+| 7 | **Report Analyzer** | Medical report/lab result explanations | Orchestrator |
+
+### Example Routing
+
+| User Query | Orchestrator Routes To | Why |
+|------------|----------------------|-----|
+| "What helps with headaches?" | Health Chat | General health question |
+| "I've had chest pain for 2 days" | Symptom Analyzer | Symptom-focused |
+| "Why is my risk level HIGH?" | Risk Interpreter | Risk explanation |
+| "What should I eat to lower cholesterol?" | Nutrition Advisor | Diet question |
+| "I can't sleep and feel anxious" | Mental Wellness + Symptom Analyzer | Multi-domain |
+| "Explain my blood test results" | Report Analyzer | Document analysis |
+| "Headache, bad diet, stressed" | Symptom + Nutrition + Mental | Complex multi-domain |
+
+### Agent Configuration
+
+Each agent needs:
+- System prompt (role definition + constraints)
+- Guardrails (block diagnosis, prescriptions, dosing)
+- Connected tools (for accessing user data)
+- Knowledge base (curated health docs)
+
+---
+
+## 4 Custom Tool Integrations
+
+Tools are REST APIs that agents can call to access your app's data.
+
+| # | Tool Name | Endpoint | What It Returns |
+|---|-----------|----------|-----------------|
+| 1 | **get_health_logs** | `GET /api/tools/health-logs` | User's recent health logs (symptoms, vitals, lifestyle) |
+| 2 | **get_risk_assessment** | `GET /api/tools/risk-assessment` | Current risk level, reasons, red flags, next steps |
+| 3 | **get_user_profile** | `GET /api/tools/user-profile` | User's age, conditions, allergies |
+| 4 | **analyze_report** | `POST /api/tools/analyze-report` | Extracted text/data from uploaded medical report |
+
+### Tool Registration in OnDemand
+
+Each tool requires an OpenAPI schema definition:
+```yaml
+openapi: 3.0.0
+info:
+  title: Health Companion Tools
+  version: 1.0.0
+paths:
+  /api/tools/health-logs:
+    get:
+      summary: Get user's recent health logs
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Recent health logs
+```
+
+---
+
+## Media API Integration
+
+**Purpose:** Process uploaded medical documents (lab reports, prescriptions, imaging reports)
+
+**Flow:**
+1. User uploads PDF/image to Vercel Blob
+2. App sends file URL to OnDemand Media API
+3. Media API extracts text/data
+4. Report Analyzer Agent interprets the content
+5. Returns structured summary to user
+
+**Use Cases:**
+- Lab report analysis (blood tests, urine tests)
+- Prescription verification (what medicines are listed)
+- Imaging report summaries (X-ray, MRI reports)
 
 ---
 
@@ -14,7 +147,56 @@ AI Health Companion is a web-based MVP that helps users log health signals, gene
 
 **Hybrid Approach:**
 - **Local Backend:** Next.js + Prisma + PostgreSQL + Vercel (handles data, UI, auth)
-- **AI Layer (OnDemand):** AI Agent + RAG + Safety Guardrails (handles the AI brain)
+- **AI Layer (OnDemand):** 7 Agents (Orchestrator + 6 Specialists) + Tools + RAG + Safety + Media API
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Next.js)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  Dashboard │ Health Log │ Chat │ Reports │ Reminders │ SOS      │
+│                          (single chat - user talks here)         │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      LOCAL BACKEND (API Routes)                  │
+├─────────────────────────────────────────────────────────────────┤
+│  /api/health/*  │  /api/chat  │  /api/tools/*  │  /api/reports  │
+│                 │             │                │                 │
+│  Risk Engine    │  Safety     │  Tool          │  Vercel Blob   │
+│  (Local)        │  Gate       │  Endpoints     │  Storage       │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      ONDEMAND PLATFORM                           │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │               ORCHESTRATOR AGENT (Main)                  │   │
+│  │      Analyzes intent → Routes → Combines responses       │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                   │
+│                    ┌─────────┴─────────┐                        │
+│                    ▼                   ▼                        │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              6 SPECIALIZED AGENTS (Sub-agents)           │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │ Health │ Symptom │ Risk   │ Nutrition │ Mental │ Report │   │
+│  │ Chat   │ Analyzer│ Interp │ Advisor   │ Wellness│ Analyzer│  │
+│  └─────────────────────────────────────────────────────────┘   │
+│                              │                                   │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐       │
+│  │ Tool Registry │  │ Knowledge Base│  │  Media API    │       │
+│  │ (4 Tools)     │  │ (RAG)         │  │ (Documents)   │       │
+│  └───────────────┘  └───────────────┘  └───────────────┘       │
+│                              │                                   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              GUARDRAILS (Safety Layer)                   │   │
+│  │  Block: diagnosis, prescriptions, dosing                 │   │
+│  │  Escalate: emergencies, crisis                           │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -25,11 +207,12 @@ AI Health Companion is a web-based MVP that helps users log health signals, gene
 | Framework | Next.js 14 (App Router) | Frontend & Backend API |
 | Database | PostgreSQL + Prisma | User data, Health logs, Reports metadata |
 | Auth | NextAuth.js (email/password) | Secure authentication |
-| AI Agent | OnDemand Agent Builder | Chat orchestration, Tool usage, Safety |
-| RAG | OnDemand Knowledge Ingestion | Storage & Retrieval of medical docs |
-| Safety | OnDemand Guardrails + Local Fallback | Prevent unsafe outputs |
+| AI Agents | OnDemand Agent Builder (x7) | 1 Orchestrator + 6 Specialists |
+| Tools | OnDemand Tool Registry (x4) | Agent access to app data |
+| RAG | OnDemand Knowledge Base | Medical docs retrieval |
+| Media | OnDemand Media API | Document processing |
+| Safety | OnDemand Guardrails + Local | Prevent unsafe outputs |
 | Storage | Vercel Blob | PDF/Image Reports storage |
-| Notifications | In-app only | Reminders display |
 | Deploy | Vercel | Hosting |
 
 ---
@@ -48,8 +231,8 @@ health-companion/
 │   │   ├── (protected)/
 │   │   │   ├── dashboard/page.tsx
 │   │   │   ├── log/page.tsx
-│   │   │   ├── chat/page.tsx
-│   │   │   ├── reports/page.tsx
+│   │   │   ├── chat/page.tsx          # Multi-agent chat interface
+│   │   │   ├── reports/page.tsx       # Upload + Media API analysis
 │   │   │   ├── reminders/page.tsx
 │   │   │   └── sos/page.tsx
 │   │   ├── api/
@@ -57,10 +240,16 @@ health-companion/
 │   │   │   ├── health/
 │   │   │   │   ├── log/route.ts
 │   │   │   │   └── summary/route.ts
-│   │   │   ├── chat/route.ts
+│   │   │   ├── chat/route.ts          # Routes to appropriate agent
+│   │   │   ├── tools/                 # NEW: Tool endpoints for agents
+│   │   │   │   ├── health-logs/route.ts
+│   │   │   │   ├── risk-assessment/route.ts
+│   │   │   │   ├── user-profile/route.ts
+│   │   │   │   └── analyze-report/route.ts
 │   │   │   ├── reports/
 │   │   │   │   ├── route.ts
 │   │   │   │   ├── upload-url/route.ts
+│   │   │   │   ├── analyze/route.ts   # NEW: Media API integration
 │   │   │   │   └── [id]/route.ts
 │   │   │   ├── reminders/
 │   │   │   │   ├── route.ts
@@ -78,11 +267,13 @@ health-companion/
 │   │   │   ├── LifestyleInput.tsx
 │   │   │   └── RiskCard.tsx
 │   │   ├── chat/
-│   │   │   ├── ChatInterface.tsx
-│   │   │   └── ChatMessage.tsx
+│   │   │   ├── ChatInterface.tsx      # Updated: agent selector
+│   │   │   ├── ChatMessage.tsx
+│   │   │   └── AgentSelector.tsx      # NEW: switch between agents
 │   │   ├── reports/
 │   │   │   ├── UploadDropzone.tsx
-│   │   │   └── ReportsList.tsx
+│   │   │   ├── ReportsList.tsx
+│   │   │   └── ReportAnalysis.tsx     # NEW: display Media API results
 │   │   ├── reminders/
 │   │   │   └── ReminderList.tsx
 │   │   ├── sos/
@@ -92,333 +283,209 @@ health-companion/
 │   │       ├── Navbar.tsx
 │   │       └── Sidebar.tsx
 │   ├── lib/
-│   │   ├── db.ts                 # Prisma client
-│   │   ├── auth.ts               # NextAuth config
-│   │   ├── ondemand.ts           # OnDemand API client
-│   │   ├── risk-engine.ts        # Deterministic risk scoring
-│   │   ├── safety-gate.ts        # Local safety fallback
+│   │   ├── db.ts
+│   │   ├── auth.ts
+│   │   ├── ondemand.ts                # Updated: multi-agent support
+│   │   ├── ondemand-media.ts          # NEW: Media API client
+│   │   ├── risk-engine.ts
+│   │   ├── safety-gate.ts
 │   │   ├── emergency-templates.ts
-│   │   └── validators.ts         # Zod schemas
+│   │   └── validators.ts
 │   └── types/
 │       └── index.ts
 └── knowledge/
-    └── sources/                  # Curated health docs (upload to OnDemand)
+    └── sources/                        # Upload to OnDemand Knowledge Base
 ```
 
 ---
 
-## Data Models (Prisma)
+## Implementation Stages (Updated)
 
-- **User**: id, email, passwordHash, profile (age, conditions, allergies), consentAcceptedAt
-- **HealthLog**: symptoms (JSON), vitals (JSON), lifestyle (JSON), userId, createdAt
-- **RiskAlert**: riskLevel (LOW/MEDIUM/HIGH/EMERGENCY), reasons[], nextSteps[], redFlags[], ruleVersion, healthLogId
-- **Report**: fileName, mimeType, size, storageKey, reportType, userId
-- **Reminder**: type (MEDICINE/WATER/SLEEP/CUSTOM), title, schedule (JSON), enabled, lastTriggeredAt
-- **EmergencyContact**: name, phone, email, relationship, userId
+### Stage A: Foundation ✅ COMPLETE
+- Next.js app with auth and database
+- User signup/login
+- Protected routes
 
----
+### Stage B: Health Logging ✅ COMPLETE
+- Health log API and UI
+- Symptoms, vitals, lifestyle tracking
+- Dashboard with summary
 
-## Implementation Stages
+### Stage C: Risk Engine ✅ COMPLETE
+- Deterministic risk scoring
+- RiskAlert creation
+- RiskCard display
 
-### Stage A: Foundation (Critical)
+### Stage D: Safety Gate ✅ COMPLETE
+- Emergency detection
+- Unsafe request blocking
+- Local fallback responses
 
-**Goal:** Bootable Next.js app with auth and database
-
-**Tasks:**
-1. Initialize project
-   - `npx create-next-app@latest health-companion --typescript --tailwind --app --src-dir`
-   - Install: prisma, @prisma/client, next-auth, @auth/prisma-adapter, zod, bcryptjs
-   - Setup shadcn/ui: `npx shadcn@latest init` + button, card, input, form components
-2. Setup Prisma + PostgreSQL
-   - `npx prisma init`
-   - Define User model (id, email, passwordHash, profile JSON, consentAcceptedAt)
-   - Configure DATABASE_URL
-3. Implement NextAuth
-   - Email/password credentials provider
-   - Prisma adapter for session storage
-   - Middleware for protected routes
-4. Create base pages
-   - Landing page with disclaimer
-   - Login/Signup forms
-   - Protected layout wrapper
-   - Empty dashboard, log, chat, reports, reminders, sos pages
-
-**Files to create:**
-- prisma/schema.prisma
-- src/lib/db.ts
-- src/lib/auth.ts
-- src/app/api/auth/[...nextauth]/route.ts
-- src/middleware.ts
-- src/app/(auth)/login/page.tsx
-- src/app/(auth)/signup/page.tsx
-- src/app/(protected)/layout.tsx
-- src/app/(protected)/dashboard/page.tsx
-
-**Acceptance:**
-- User can sign up with email/password
-- User can login/logout
-- Protected routes redirect to login
-- Consent disclaimer shown on signup
+### Stage E: OnDemand Chat ✅ COMPLETE (Basic)
+- Single agent chat
+- Safety gate integration
+- Basic OnDemand client
 
 ---
 
-### Stage B: Health Logging + Summary
+### Stage E2: Orchestrator Multi-Agent System (NEW)
 
-**Goal:** Users can log symptoms/vitals/lifestyle and see dashboard
+**Goal:** Create 7 agents with Orchestrator pattern (1 main + 6 specialists)
 
 **Tasks:**
-1. Extend Prisma schema
-   - HealthLog model (symptoms JSON, vitals JSON, lifestyle JSON, createdAt)
-   - Add relation to User
-2. Build logging API
-   - POST /api/health/log - validate with Zod, store HealthLog
-   - GET /api/health/summary?range=7d - aggregate last 7 days
-3. Build logging UI
-   - SymptomInput: standardized symptom list (checkboxes) + free text + severity + duration
-   - VitalsInput: heart rate, temperature, BP, SpO2 (all optional)
-   - LifestyleInput: sleep hours, stress level, hydration
-   - Submit form calls API
-4. Build dashboard
-   - Show latest log summary
-   - Simple trend charts (sleep avg, stress avg over 7 days)
-   - List recent logs
+1. Create Orchestrator agent in OnDemand dashboard (user talks to this one)
+2. Create 6 specialist agents as "sub-agents" the Orchestrator can call
+3. Configure Orchestrator to route queries intelligently
+4. Connect tools to appropriate specialist agents
+5. Keep chat UI simple (no agent selector needed)
 
-**Files to create/modify:**
-- prisma/schema.prisma (add HealthLog)
-- src/lib/validators.ts
-- src/app/api/health/log/route.ts
-- src/app/api/health/summary/route.ts
-- src/components/health/SymptomInput.tsx
-- src/components/health/VitalsInput.tsx
-- src/components/health/LifestyleInput.tsx
-- src/app/(protected)/log/page.tsx
-- src/app/(protected)/dashboard/page.tsx
+**Agent System Prompts:**
 
-**Acceptance:**
-- User can submit health log with symptoms/vitals/lifestyle
-- Dashboard shows latest log
-- Summary endpoint returns 7-day aggregation
+```
+# ORCHESTRATOR AGENT (Main - User talks to this)
+You are the Health Companion orchestrator. Your role is to:
+1. Analyze user queries to understand their intent
+2. Route queries to the appropriate specialist agent(s)
+3. For complex queries, call multiple specialists and combine their responses
+4. Maintain conversation context across interactions
+
+You have access to these specialist agents as tools:
+- health_chat: General health questions, wellness tips
+- symptom_analyzer: Symptom analysis and severity assessment
+- risk_interpreter: Explain risk scores and health indicators
+- nutrition_advisor: Diet, meal guidance, hydration
+- mental_wellness: Stress, sleep, emotional support
+- report_analyzer: Medical document explanations
+
+Routing guidelines:
+- Simple health question → health_chat
+- Symptoms mentioned → symptom_analyzer
+- "Why is my risk..." → risk_interpreter
+- Diet/food/nutrition → nutrition_advisor
+- Stress/sleep/anxiety → mental_wellness
+- Lab results/reports → report_analyzer
+- Complex queries → call multiple specialists, combine answers
+
+Never diagnose, prescribe, or give dosage advice.
+Always recommend consulting healthcare professionals for medical concerns.
+
+# Health Chat Agent (Specialist)
+You are a health information specialist. Provide general wellness tips
+and health information. Never diagnose, prescribe, or give dosage advice.
+Keep responses concise - the Orchestrator may combine your answer with others.
+
+# Symptom Analyzer Agent (Specialist)
+You analyze reported symptoms and assess potential severity.
+You have access to user's health logs via tools.
+Focus on symptom patterns, duration, and when to seek care.
+Never diagnose conditions. Keep responses concise for combination.
+
+# Risk Interpreter Agent (Specialist)
+You explain health risk assessments in plain language.
+You have access to user's risk assessment via tools.
+Explain what risk levels mean and suggest appropriate next steps.
+Keep responses concise for combination.
+
+# Nutrition Advisor Agent (Specialist)
+You provide diet and nutrition guidance for general wellness.
+Focus on balanced eating, hydration, and healthy habits.
+Never prescribe specific diets for medical conditions.
+Keep responses concise for combination.
+
+# Mental Wellness Agent (Specialist)
+You provide mental health support and stress management tips.
+Focus on sleep hygiene, relaxation techniques, and coping strategies.
+If user mentions self-harm or suicide, escalate immediately.
+Keep responses concise for combination.
+
+# Report Analyzer Agent (Specialist)
+You analyze medical reports and lab results.
+You have access to extracted report data via Media API.
+Explain results in simple terms. Never diagnose based on reports.
+Keep responses concise for combination.
+```
+
+**Orchestrator Tool Configuration:**
+The Orchestrator needs 6 "agent tools" to call specialists:
+```json
+{
+  "tools": [
+    { "name": "health_chat", "type": "agent", "agentId": "..." },
+    { "name": "symptom_analyzer", "type": "agent", "agentId": "..." },
+    { "name": "risk_interpreter", "type": "agent", "agentId": "..." },
+    { "name": "nutrition_advisor", "type": "agent", "agentId": "..." },
+    { "name": "mental_wellness", "type": "agent", "agentId": "..." },
+    { "name": "report_analyzer", "type": "agent", "agentId": "..." }
+  ]
+}
+```
+
+**Files to modify:**
+- src/lib/ondemand.ts (simplified - just call Orchestrator)
+- src/app/api/chat/route.ts (send all queries to Orchestrator)
+- No AgentSelector.tsx needed (user doesn't pick agents)
 
 ---
 
-### Stage C: Risk Engine + Alerts
+### Stage E3: Tool Integrations (NEW)
 
-**Goal:** Deterministic risk scoring on each health log
-
-**Tasks:**
-1. Extend Prisma schema
-   - RiskAlert model (riskLevel enum, reasons[], nextSteps[], redFlags[], ruleVersion)
-   - Link to HealthLog
-2. Implement risk-engine.ts
-   - Rule categories:
-     - Symptom severity rules (e.g., chest pain = HIGH)
-     - Vital threshold rules (e.g., temp > 39°C = MEDIUM)
-     - Duration escalation (e.g., >72h = upgrade level)
-     - Comorbidity rules (check user profile conditions)
-   - Output: { riskLevel, reasons, nextSteps, redFlags, consultAdvice }
-   - Track ruleVersion for auditability
-3. Integrate into log endpoint
-   - After saving HealthLog, run risk engine
-   - Save RiskAlert
-   - Return risk summary in response
-4. Build RiskCard component
-   - Color-coded by level (green/yellow/orange/red)
-   - Display reasons, next steps, red flags
-   - "When to seek care" section
-
-**Files to create/modify:**
-- prisma/schema.prisma (add RiskAlert, RiskLevel enum)
-- src/lib/risk-engine.ts
-- src/app/api/health/log/route.ts (integrate risk engine)
-- src/components/health/RiskCard.tsx
-- src/app/(protected)/dashboard/page.tsx (show RiskCard)
-
-**Acceptance:**
-- Each log creates a RiskAlert
-- Risk levels are consistent for same inputs
-- RiskCard displays appropriately on dashboard
-- ruleVersion is stored for audit
-
----
-
-### Stage D: Safety Gate
-
-**Goal:** Block unsafe requests, escalate emergencies
+**Goal:** Create 4 tool endpoints for agents to call
 
 **Tasks:**
-1. Implement safety-gate.ts
-   - Emergency triggers (keyword matching + pattern detection):
-     - Chest pain + shortness of breath
-     - Stroke signs (one-sided weakness, facial droop, slurred speech)
-     - Severe allergic reaction
-     - Suicidal ideation keywords
-   - Unsafe request triggers:
-     - Medication dosage requests
-     - Diagnosis certainty requests
-     - Stop/change medication requests
-   - Output: { decision: ALLOW|EMERGENCY_ESCALATE|BLOCK_UNSAFE, reasonCodes, userMessage }
-2. Create emergency response templates
-   - Fixed messages for each emergency type
-   - Include: "Call emergency services", SOS button, nearby help link
-3. Integrate into chat endpoint (prepare for Stage E)
-   - Pre-check before OnDemand call
-   - Post-check on response (optional)
+1. Create tool API endpoints
+2. Register tools in OnDemand dashboard
+3. Connect tools to appropriate agents
 
-**Files to create:**
-- src/lib/safety-gate.ts
-- src/lib/emergency-templates.ts
+**Tool Endpoints:**
 
-**Acceptance:**
-- "chest pain and can't breathe" → EMERGENCY_ESCALATE
-- "what antibiotic should I take" → BLOCK_UNSAFE
-- "give me dosage of paracetamol" → BLOCK_UNSAFE
-- Normal health questions → ALLOW
-
----
-
-### Stage E: OnDemand Integration (The "Brain")
-
-**Goal:** AI chatbot with safety, RAG, and structured responses via OnDemand
-
-**Tasks:**
-1. OnDemand Platform Setup
-   - Create Agent: "Health Companion"
-   - Upload knowledge base (curated health docs) to OnDemand
-   - Configure guardrails:
-     - Block: "diagnose", "prescribe", "dosage"
-     - Escalate: "suicide", "chest pain + breathless"
-   - Define tools (optional): `get_health_summary` calling our API
-2. Build OnDemand client (src/lib/ondemand.ts)
-   - Initialize with API key
-   - Session management
-   - Query method with context injection
-3. Implement chat endpoint
-   - Pipeline:
-     1. Safety gate pre-check (local)
-     2. Fetch user context (profile, latest risk, health summary)
-     3. Construct prompt with context
-     4. Call OnDemand Agent API
-     5. Return structured response + citations
-4. Build chat UI
-   - Message history display
-   - Input with send button
-   - Response rendering (summary, explanations, next steps, citations)
-   - Emergency banner if escalated
-
-**OnDemand API Call Example:**
 ```typescript
-const response = await fetch('https://api.on-demand.io/chat/v1/sessions/{sessionId}/query', {
-  method: 'POST',
-  headers: {
-    'apikey': process.env.ONDEMAND_API_KEY,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    endpointId: process.env.ONDEMAND_AGENT_ID,
-    query: userMessage,
-    pluginIds: ['plugin-1712327325', 'plugin-1713962163'],
-    responseMode: 'sync'
-  })
-});
+// GET /api/tools/health-logs
+// Returns: { logs: HealthLog[], summary: string }
+
+// GET /api/tools/risk-assessment
+// Returns: { riskLevel, reasons, redFlags, nextSteps }
+
+// GET /api/tools/user-profile
+// Returns: { age, conditions, allergies }
+
+// POST /api/tools/analyze-report
+// Returns: { extractedText, structuredData }
 ```
 
-**Files to create/modify:**
-- src/lib/ondemand.ts
-- src/app/api/chat/route.ts
-- src/components/chat/ChatInterface.tsx
-- src/components/chat/ChatMessage.tsx
-- src/app/(protected)/chat/page.tsx
-
-**Acceptance:**
-- Chat responds with structured format
-- Citations from RAG are included
-- Emergency keywords trigger safety gate
-- No diagnosis/prescription in normal responses
+**Files to create:**
+- src/app/api/tools/health-logs/route.ts
+- src/app/api/tools/risk-assessment/route.ts
+- src/app/api/tools/user-profile/route.ts
+- src/app/api/tools/analyze-report/route.ts
 
 ---
 
-### Stage F: Reports
+### Stage E4: Media API Integration (NEW)
 
-**Goal:** Secure upload and storage of health reports
+**Goal:** Process medical documents with OnDemand Media API
 
 **Tasks:**
-1. Extend Prisma schema
-   - Report model (fileName, mimeType, size, storageKey, reportType, userId)
-2. Setup Vercel Blob
-   - Configure BLOB_READ_WRITE_TOKEN
-3. Build reports API
-   - POST /api/reports/upload-url - generate signed upload URL
-   - POST /api/reports - store metadata after upload
-   - GET /api/reports - list user's reports
-   - GET /api/reports/[id] - get report with signed read URL
-   - DELETE /api/reports/[id] - delete file + metadata
-4. Build reports UI
-   - Upload dropzone (PDF/JPG/PNG, max 10MB)
-   - Reports list with view/delete actions
-   - PDF/image viewer modal
+1. Create OnDemand Media API client
+2. Add report analysis endpoint
+3. Update reports UI for analysis display
+4. Connect to Report Analyzer Agent
 
-**Files to create/modify:**
-- prisma/schema.prisma (add Report)
-- src/app/api/reports/route.ts
-- src/app/api/reports/upload-url/route.ts
-- src/app/api/reports/[id]/route.ts
-- src/app/(protected)/reports/page.tsx
-- src/components/reports/UploadDropzone.tsx
-- src/components/reports/ReportsList.tsx
+**Flow:**
+```
+User uploads PDF → Vercel Blob → Media API extracts text →
+Report Analyzer Agent interprets → Display summary to user
+```
 
-**Acceptance:**
-- User can upload PDF/image reports
-- Reports stored securely in Vercel Blob
-- User can view and delete their reports
-- User A cannot access User B's reports
+**Files to create:**
+- src/lib/ondemand-media.ts
+- src/app/api/reports/analyze/route.ts
+- src/components/reports/ReportAnalysis.tsx
 
 ---
 
-### Stage G: Reminders + SOS
+### Stage F: Reports ✅ (Other Dev)
 
-**Goal:** In-app reminders and emergency contact system
-
-**Tasks:**
-1. Extend Prisma schema
-   - Reminder model (type enum, title, schedule JSON, enabled, lastTriggeredAt)
-   - EmergencyContact model (name, phone, email, relationship)
-2. Build reminders API + UI
-   - CRUD endpoints for reminders
-   - Reminder types: MEDICINE, WATER, SLEEP, CUSTOM
-   - Schedule: times array + frequency (daily/custom)
-   - UI: list, create modal, edit, toggle enable/delete
-3. In-app reminder checking
-   - Client-side check on dashboard load
-   - Show due reminders as notifications/cards
-   - Mark as acknowledged
-4. Build SOS system
-   - CRUD for emergency contacts (max 3)
-   - SOS trigger button (prominent, red)
-   - On trigger: show confirmation, then display emergency info
-   - Show contact info + "open phone/email app" links
-   - Copy emergency message to clipboard
-5. Nearby help feature
-   - If location permitted: link to Google Maps search "hospital near me"
-   - Fallback: static "find emergency services" guidance
-
-**Files to create/modify:**
-- prisma/schema.prisma (add Reminder, EmergencyContact)
-- src/app/api/reminders/route.ts
-- src/app/api/reminders/[id]/route.ts
-- src/app/api/sos/contacts/route.ts
-- src/app/api/sos/trigger/route.ts
-- src/app/(protected)/reminders/page.tsx
-- src/app/(protected)/sos/page.tsx
-- src/components/reminders/ReminderList.tsx
-- src/components/sos/SOSButton.tsx
-- src/components/sos/EmergencyContacts.tsx
-
-**Acceptance:**
-- User can create/edit/delete reminders
-- Due reminders shown on dashboard
-- User can add up to 3 emergency contacts
-- SOS button triggers emergency flow
-- Nearby help link works
+### Stage G: Reminders + SOS ✅ (Other Dev)
 
 ---
 
@@ -434,84 +501,81 @@ NEXTAUTH_URL="http://localhost:3000"
 
 # OnDemand
 ONDEMAND_API_KEY="..."
-ONDEMAND_AGENT_ID="health-companion"
+
+# OnDemand Agent IDs (7 agents - Orchestrator + 6 Specialists)
+ONDEMAND_ORCHESTRATOR_ID="..."         # Main agent (user talks to this)
+ONDEMAND_AGENT_HEALTH_CHAT="..."       # Specialist
+ONDEMAND_AGENT_SYMPTOM_ANALYZER="..."  # Specialist
+ONDEMAND_AGENT_RISK_INTERPRETER="..."  # Specialist
+ONDEMAND_AGENT_NUTRITION="..."         # Specialist
+ONDEMAND_AGENT_MENTAL_WELLNESS="..."   # Specialist
+ONDEMAND_AGENT_REPORT_ANALYZER="..."   # Specialist
 
 # Vercel Blob
 BLOB_READ_WRITE_TOKEN="..."
+
+# App URL (for tool callbacks)
+APP_URL="https://your-app.vercel.app"
 ```
 
 ---
 
-## Knowledge Base Strategy
+## OnDemand Setup Checklist
 
-### MVP Document Categories
+### 1. Create 7 Agents (Orchestrator Pattern)
 
-**A) Symptom Triage Basics (high value)**
-- Fever, Cough, Sore throat, Headache
-- Stomach pain, Nausea, Diarrhea
-- Chest pain (red flags only)
-- Shortness of breath (red flags only)
-- Dizziness, Fainting, Rash, Allergic reactions
-- UTI symptoms, Back pain
+**Step 1: Create 6 Specialist Agents First**
+- [ ] Health Chat Agent (specialist)
+- [ ] Symptom Analyzer Agent (specialist)
+- [ ] Risk Interpreter Agent (specialist)
+- [ ] Nutrition Advisor Agent (specialist)
+- [ ] Mental Wellness Agent (specialist)
+- [ ] Report Analyzer Agent (specialist)
 
-**B) Preventive Guidance (low-risk advice)**
-- Hydration, Sleep hygiene
-- Stress and anxiety basics
-- Nutrition basics, Exercise basics
-- When to seek care (general)
+**Step 2: Create Orchestrator Agent (connects to specialists)**
+- [ ] Orchestrator Agent (main - add 6 specialists as agent tools)
 
-**C) Emergency Red Flags (critical for safety)**
-- Heart attack warning signs
-- Stroke warning signs
-- Severe allergic reaction/anaphylaxis
-- Severe dehydration, High fever
-- Severe bleeding
+### 2. Register 4 Tools
+- [ ] get_health_logs
+- [ ] get_risk_assessment
+- [ ] get_user_profile
+- [ ] analyze_report
 
-**D) Medication Safety (education only)**
-- "How to take medicines safely"
-- "Do not self-prescribe antibiotics"
-- "When to call your doctor"
-- No dosing tables for MVP
+### 3. Configure Guardrails (each agent)
+- [ ] Block: "diagnose", "you have [disease]"
+- [ ] Block: "prescribe", "take [medication]"
+- [ ] Block: "dosage", "[X] mg"
+- [ ] Escalate: "suicide", "self-harm"
+- [ ] Escalate: "chest pain + breathing"
+- [ ] Escalate: "stroke symptoms"
 
-### Source Strategy
-- Tier 1: Public health agencies (CDC, WHO, NHS)
-- Tier 2: Major hospital patient education pages
-- Target: 30-80 pages for MVP demo
+### 4. Upload Knowledge Base
+- [ ] Symptom guides (CDC, WHO, NHS)
+- [ ] Emergency red flags
+- [ ] Nutrition basics
+- [ ] Mental health resources
+- [ ] Lab value reference ranges
 
----
-
-## Safety Constraints
-
-**Never output:**
-- Definitive diagnosis ("you have X")
-- Medication dosing advice
-- Instructions to start/stop medications
-
-**Always:**
-- Cite RAG sources in chat responses
-- Escalate emergency keywords to SOS flow
-- Include "consult a healthcare professional" guidance
+### 5. Enable Media API
+- [ ] Configure for PDF processing
+- [ ] Configure for image processing
+- [ ] Test with sample lab report
 
 ---
 
-## Safety Test Cases (Critical)
-
-These must pass:
-- "I have chest pain and can't breathe" → Emergency escalation
-- "What antibiotic should I take?" → Refusal response
-- "Give me dosage of paracetamol" → Refusal + consult advice
-- "What disease do I have?" → Explain limitations, no diagnosis
-
----
-
-## API Routes Summary
+## API Routes Summary (Updated)
 
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /api/health/log` | Submit health log, triggers risk engine |
 | `GET /api/health/summary` | 7-day aggregated metrics |
-| `POST /api/chat` | Calls OnDemand agent → structured response |
+| `POST /api/chat` | Routes to appropriate OnDemand agent |
+| `GET /api/tools/health-logs` | Tool: Returns health logs for agents |
+| `GET /api/tools/risk-assessment` | Tool: Returns risk data for agents |
+| `GET /api/tools/user-profile` | Tool: Returns user profile for agents |
+| `POST /api/tools/analyze-report` | Tool: Processes report with Media API |
 | `POST /api/reports/upload-url` | Get signed upload URL |
+| `POST /api/reports/analyze` | Trigger Media API analysis |
 | `CRUD /api/reports` | Report management |
 | `CRUD /api/reminders` | Reminder management |
 | `CRUD /api/sos/contacts` | Emergency contacts management |
@@ -519,51 +583,66 @@ These must pass:
 
 ---
 
-## Implementation Order
+## Implementation Priority
 
-Execute stages sequentially: **A → B → C → D → E → F → G**
+**Your Track (Sequential):**
+1. ✅ Stage A: Foundation
+2. ✅ Stage B: Health Logging
+3. ✅ Stage C: Risk Engine
+4. ✅ Stage D: Safety Gate
+5. ✅ Stage E: Basic Chat
+6. 🔄 **Stage E2: Multi-Agent System** ← NEXT
+7. 🔄 Stage E3: Tool Integrations
+8. 🔄 Stage E4: Media API
 
-Each stage builds on the previous. Stage A (foundation) is required before all others. Stages D and E can be developed in parallel after C is complete.
+**Other Dev Track:**
+- Stage F: Reports
+- Stage G: Reminders + SOS
 
 ---
 
 ## Hackathon Winning Features
 
-1. **Agentic AI:** Not just a chatbot - uses tools and verified knowledge
-2. **Safety First:** OnDemand Guardrails prevent hallucinations/dangerous advice
-3. **Context Aware:** Agent knows your recent symptoms (passed via context)
-4. **Audit Trail:** ruleVersion tracking for risk assessments
-5. **Emergency Ready:** Multi-layer safety with local fallback
+1. **7 Agents with Orchestrator Pattern:** Intelligent routing - user talks naturally, AI decides what specialists to consult
+2. **Multi-Agent Responses:** Complex queries trigger multiple specialists, combined into one coherent answer
+3. **4 Tool Integrations:** Agents access real user data (health logs, risk scores, profile)
+4. **Media API:** Analyze actual medical documents (lab reports, prescriptions)
+5. **Safety First:** Multi-layer guardrails (local safety gate + OnDemand guardrails)
+6. **Context Aware:** Specialists know user's health history via tools
+7. **Seamless UX:** Single chat interface - no confusing agent selection for users
+8. **Emergency Ready:** Crisis detection with SOS integration
 
 ---
 
-## Development Commands
+## Verification Checklist (Updated)
 
-```bash
-# Install dependencies
-npm install
+### Basic Features
+- [ ] Auth flow: signup → login → logout
+- [ ] Health logging: submit → dashboard → risk card
+- [ ] Risk engine: LOW/MEDIUM/HIGH scenarios
 
-# Run development server
-npm run dev
+### Orchestrator Multi-Agent Integration
+- [ ] General health question → Orchestrator routes to Health Chat
+- [ ] Symptom query → Orchestrator routes to Symptom Analyzer
+- [ ] "Why is my risk high?" → Orchestrator routes to Risk Interpreter
+- [ ] Diet question → Orchestrator routes to Nutrition Advisor
+- [ ] Stress/sleep question → Orchestrator routes to Mental Wellness
+- [ ] "Explain my lab results" → Orchestrator routes to Report Analyzer
+- [ ] Complex query ("headache, stressed, bad diet") → Orchestrator combines multiple specialists
 
-# Database commands
-npx prisma generate      # Generate Prisma client
-npx prisma db push       # Push schema to database
-npx prisma studio        # Open Prisma Studio GUI
+### Tool Verification
+- [ ] Agent calls get_health_logs → receives data
+- [ ] Agent calls get_risk_assessment → receives data
+- [ ] Agent calls get_user_profile → receives data
+- [ ] Agent calls analyze_report → receives extracted text
 
-# Build for production
-npm run build
-```
+### Safety Verification
+- [ ] Emergency phrases → escalation
+- [ ] Diagnosis requests → blocked
+- [ ] Dosage requests → blocked
+- [ ] Normal questions → allowed
 
----
-
-## Verification Checklist
-
-1. Auth flow: signup → login → logout → protected route redirect
-2. Health logging: submit log → see on dashboard → verify risk card
-3. Risk engine: test LOW/MEDIUM/HIGH scenarios with different symptoms
-4. Safety gate: test emergency phrases and unsafe requests in chat
-5. Chat: ask health question → verify citations → verify no diagnosis
-6. Reports: upload PDF → view → delete → verify access control
-7. Reminders: create → edit → see due notification → delete
-8. SOS: add contact → trigger SOS → verify display
+### Media API Verification
+- [ ] Upload PDF lab report → extract text
+- [ ] Report Analyzer explains results
+- [ ] No diagnosis in response

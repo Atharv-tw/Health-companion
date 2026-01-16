@@ -3,13 +3,16 @@
  *
  * Handles communication with OnDemand.io AI Agent API
  * for health-related chat functionality.
+ * Supports multiple specialized agents.
  */
+
+import { getAgent, getDefaultAgent } from "./agents";
 
 const ONDEMAND_API_BASE = "https://api.on-demand.io/chat/v1";
 
 interface OnDemandConfig {
   apiKey: string;
-  agentId: string;
+  defaultAgentId: string;
 }
 
 interface ChatMessage {
@@ -45,7 +48,7 @@ interface OnDemandError {
  */
 function getConfig(): OnDemandConfig {
   const apiKey = process.env.ONDEMAND_API_KEY;
-  const agentId = process.env.ONDEMAND_AGENT_ID;
+  const defaultAgentId = process.env.ONDEMAND_AGENT_ID;
 
   if (!apiKey) {
     throw new Error("ONDEMAND_API_KEY is not configured");
@@ -53,8 +56,26 @@ function getConfig(): OnDemandConfig {
 
   return {
     apiKey,
-    agentId: agentId || "health-companion",
+    defaultAgentId: defaultAgentId || "health-companion",
   };
+}
+
+/**
+ * Get the OnDemand endpoint ID for a given agent
+ * Falls back to default if agent not found or not configured
+ */
+function getAgentEndpoint(agentId?: string): string {
+  const config = getConfig();
+
+  if (agentId) {
+    const agent = getAgent(agentId);
+    if (agent?.onDemandId) {
+      return agent.onDemandId;
+    }
+  }
+
+  // Fallback to default agent from env
+  return config.defaultAgentId;
 }
 
 /**
@@ -90,18 +111,28 @@ export async function createSession(): Promise<string> {
 export async function sendQuery(
   sessionId: string,
   query: string,
-  context?: { healthSummary?: string; recentSymptoms?: string[] }
+  options?: {
+    agentId?: string;
+    context?: { healthSummary?: string; recentSymptoms?: string[] };
+  }
 ): Promise<OnDemandResponse> {
   const config = getConfig();
+  const endpointId = getAgentEndpoint(options?.agentId);
+
+  // Get agent-specific system prompt if available
+  const agent = options?.agentId ? getAgent(options.agentId) : getDefaultAgent();
 
   // Build the query with context if available
   let enrichedQuery = query;
-  if (context?.healthSummary) {
-    enrichedQuery = `[User Health Context: ${context.healthSummary}]\n\nUser Question: ${query}`;
+  if (agent?.systemPrompt) {
+    enrichedQuery = `[System: ${agent.systemPrompt}]\n\n${query}`;
+  }
+  if (options?.context?.healthSummary) {
+    enrichedQuery = `[User Health Context: ${options.context.healthSummary}]\n\n${enrichedQuery}`;
   }
 
   const requestBody: OnDemandQueryRequest = {
-    endpointId: config.agentId,
+    endpointId: endpointId,
     query: enrichedQuery,
     pluginIds: ["plugin-1712327325", "plugin-1713962163"], // Medical knowledge plugins
     responseMode: "sync",
@@ -146,13 +177,16 @@ export async function sendQuery(
 export async function chat(
   sessionId: string | null,
   message: string,
-  context?: { healthSummary?: string; recentSymptoms?: string[] }
+  options?: {
+    agentId?: string;
+    context?: { healthSummary?: string; recentSymptoms?: string[] };
+  }
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
   // Create session if not provided
   const activeSessionId = sessionId || (await createSession());
 
   // Send query
-  const response = await sendQuery(activeSessionId, message, context);
+  const response = await sendQuery(activeSessionId, message, options);
 
   return {
     response,
