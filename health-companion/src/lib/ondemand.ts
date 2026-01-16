@@ -1,30 +1,20 @@
 /**
  * OnDemand API Client
  *
- * Handles communication with OnDemand.io AI Agent API
- * for health-related chat functionality.
- * Supports multiple specialized agents.
+ * Handles communication with OnDemand.io AI Agent API.
+ * 
+ * ARCHITECTURE UPDATE:
+ * Supports "Orchestrator Pattern". All user queries are sent to a single
+ * Orchestrator Agent (configured in env). This agent autonomously delegates
+ * to specialized sub-agents (Health Chat, Symptom Analyzer, etc.) which are
+ * registered as "tools" within the OnDemand platform.
  */
-
-import { getAgent, getDefaultAgent } from "./agents";
 
 const ONDEMAND_API_BASE = "https://api.on-demand.io/chat/v1";
 
 interface OnDemandConfig {
   apiKey: string;
-  defaultAgentId: string;
-}
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface OnDemandQueryRequest {
-  endpointId: string;
-  query: string;
-  pluginIds?: string[];
-  responseMode?: "sync" | "stream";
+  orchestratorId: string;
 }
 
 interface OnDemandResponse {
@@ -48,40 +38,27 @@ interface OnDemandError {
  */
 function getConfig(): OnDemandConfig {
   const apiKey = process.env.ONDEMAND_API_KEY;
-  const defaultAgentId = process.env.ONDEMAND_AGENT_ID;
+  // Prefer specific Orchestrator ID, fallback to generic Agent ID, then hardcoded default
+  const orchestratorId = process.env.ONDEMAND_ORCHESTRATOR_ID || process.env.ONDEMAND_AGENT_ID;
 
   if (!apiKey) {
     throw new Error("ONDEMAND_API_KEY is not configured");
   }
 
-  return {
-    apiKey,
-    defaultAgentId: defaultAgentId || "health-companion",
-  };
-}
-
-/**
- * Get the OnDemand endpoint ID for a given agent
- * Falls back to default if agent not found or not configured
- */
-function getAgentEndpoint(agentId?: string): string {
-  const config = getConfig();
-
-  if (agentId) {
-    const agent = getAgent(agentId);
-    if (agent?.onDemandId) {
-      return agent.onDemandId;
-    }
+  if (!orchestratorId) {
+     console.warn("ONDEMAND_ORCHESTRATOR_ID is not configured. Chat may fail.");
   }
 
-  // Fallback to default agent from env
-  return config.defaultAgentId;
+  return {
+    apiKey,
+    orchestratorId: orchestratorId || "health-companion-orchestrator",
+  };
 }
 
 /**
  * Create a new chat session with OnDemand
  */
-export async function createSession(): Promise<string> {
+export async function createSession(userId?: string): Promise<string> {
   const config = getConfig();
 
   const response = await fetch(`${ONDEMAND_API_BASE}/sessions`, {
@@ -92,7 +69,8 @@ export async function createSession(): Promise<string> {
     },
     body: JSON.stringify({
       pluginIds: [],
-      externalUserId: `health-companion-${Date.now()}`,
+      // We tag the session with the user ID for debugging/tracking
+      externalUserId: userId ? `user-${userId}` : `health-companion-${Date.now()}`,
     }),
   });
 
@@ -106,36 +84,40 @@ export async function createSession(): Promise<string> {
 }
 
 /**
- * Send a query to OnDemand and get a response
+ * Send a query to the Orchestrator Agent
  */
 export async function sendQuery(
   sessionId: string,
   query: string,
-  options?: {
-    agentId?: string;
-    context?: { healthSummary?: string; recentSymptoms?: string[] };
-  }
+  userId?: string, // Vital for tools to work
+  context?: { healthSummary?: string; recentSymptoms?: string[] }
 ): Promise<OnDemandResponse> {
   const config = getConfig();
-  const endpointId = getAgentEndpoint(options?.agentId);
-
-  // Get agent-specific system prompt if available
-  const agent = options?.agentId ? getAgent(options.agentId) : getDefaultAgent();
-
-  // Build the query with context if available
+  
+  // Construct the enriched query with context
   let enrichedQuery = query;
-  if (agent?.systemPrompt) {
-    enrichedQuery = `[System: ${agent.systemPrompt}]\n\n${query}`;
+
+  // We inject context as a system-like instruction at the start
+  // The Orchestrator will use this to inform its routing/decisions
+  const contextParts = [];
+  if (context?.healthSummary) {
+    contextParts.push(`[Context: User Health Summary: ${context.healthSummary}]`);
   }
-  if (options?.context?.healthSummary) {
-    enrichedQuery = `[User Health Context: ${options.context.healthSummary}]\n\n${enrichedQuery}`;
+  if (userId) {
+     // We explicitly tell the agent the User ID so it can call tools with it
+     contextParts.push(`[Context: Current User ID: ${userId}]`);
+  }
+  
+  if (contextParts.length > 0) {
+    enrichedQuery = `${contextParts.join("\n")}\n\n${query}`;
   }
 
-  const requestBody: OnDemandQueryRequest = {
-    endpointId: endpointId,
+  const requestBody = {
+    endpointId: config.orchestratorId,
     query: enrichedQuery,
     pluginIds: ["plugin-1712327325", "plugin-1713962163"], // Medical knowledge plugins
     responseMode: "sync",
+    // We can also pass variables if the API supports it, but enriching query is safer for now
   };
 
   const response = await fetch(
@@ -163,7 +145,6 @@ export async function sendQuery(
 
   const data = await response.json();
 
-  // Extract the response from OnDemand's response format
   return {
     answer: data.data?.answer || data.answer || data.response || "I couldn't generate a response.",
     citations: data.data?.citations || data.citations || [],
@@ -172,50 +153,24 @@ export async function sendQuery(
 }
 
 /**
- * Send a message and get AI response (simplified interface)
+ * Main chat interface
  */
 export async function chat(
   sessionId: string | null,
   message: string,
-  options?: {
-    agentId?: string;
-    context?: { healthSummary?: string; recentSymptoms?: string[] };
-  }
+  userId?: string,
+  context?: { healthSummary?: string; recentSymptoms?: string[] }
 ): Promise<{ response: OnDemandResponse; sessionId: string }> {
   // Create session if not provided
-  const activeSessionId = sessionId || (await createSession());
+  const activeSessionId = sessionId || (await createSession(userId));
 
   // Send query
-  const response = await sendQuery(activeSessionId, message, options);
+  const response = await sendQuery(activeSessionId, message, userId, context);
 
   return {
     response,
     sessionId: activeSessionId,
   };
-}
-
-/**
- * Check if OnDemand API is available
- */
-export async function checkHealth(): Promise<boolean> {
-  try {
-    const config = getConfig();
-    // Simple ping to check if we can reach the API
-    const response = await fetch(`${ONDEMAND_API_BASE}/sessions`, {
-      method: "POST",
-      headers: {
-        apikey: config.apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        pluginIds: [],
-        externalUserId: "health-check",
-      }),
-    });
-    return response.ok;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -227,7 +182,9 @@ export function formatResponseWithCitations(response: OnDemandResponse): string 
   if (response.citations && response.citations.length > 0) {
     formatted += "\n\n---\n**Sources:**\n";
     response.citations.forEach((citation, index) => {
-      formatted += `${index + 1}. ${citation.title || citation.source}\n`;
+      // Clean up title if it's a URL or generic
+      const title = citation.title || citation.source;
+      formatted += `${index + 1}. ${title}\n`;
     });
   }
 

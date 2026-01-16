@@ -146,6 +146,7 @@ export async function POST(request: NextRequest) {
       const { response } = await chat(
         chatSession.ondemandSessionId,
         message,
+        session.user.id,
         healthContext
       );
 
