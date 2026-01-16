@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, Sparkles, ShieldCheck, Activity, Cpu } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
@@ -69,12 +69,6 @@ export function DesktopChat() {
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
             <span className="text-[11px] font-bold text-green-600 uppercase tracking-[0.2em]">Secure Link Established</span>
           </div>
-        </div>
-        
-        <div className="flex gap-12">
-           <MetaData label="Latency" value="<240ms" icon={<Cpu className="w-3.5 h-3.5" />} />
-           <MetaData label="Validation" value="Active" icon={<ShieldCheck className="w-3.5 h-3.5" />} />
-           <MetaData label="System" value="Optimal" icon={<Activity className="w-3.5 h-3.5" />} />
         </div>
       </div>
 
