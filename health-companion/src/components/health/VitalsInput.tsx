@@ -19,7 +19,7 @@ export function VitalsInput({ value = {}, onChange }: VitalsInputProps) {
     <div className="space-y-6">
       <div>
         <Label className="text-base font-medium">Vital Signs</Label>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Enter any vitals you&apos;ve measured (all fields are optional)
         </p>
       </div>
@@ -38,11 +38,11 @@ export function VitalsInput({ value = {}, onChange }: VitalsInputProps) {
               value={value?.heartRate ?? ""}
               onChange={(e) => handleChange("heartRate", e.target.value)}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
               bpm
             </span>
           </div>
-          <p className="text-xs text-gray-400">Normal: 60-100 bpm</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Normal: 60-100 bpm</p>
         </div>
 
         {/* Temperature */}
@@ -59,11 +59,11 @@ export function VitalsInput({ value = {}, onChange }: VitalsInputProps) {
               value={value?.temperature ?? ""}
               onChange={(e) => handleChange("temperature", e.target.value)}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
               °C
             </span>
           </div>
-          <p className="text-xs text-gray-400">Normal: 36.1-37.2°C</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Normal: 36.1-37.2°C</p>
         </div>
 
         {/* Blood Pressure */}
@@ -89,9 +89,9 @@ export function VitalsInput({ value = {}, onChange }: VitalsInputProps) {
               onChange={(e) => handleChange("bpDiastolic", e.target.value)}
               className="w-24"
             />
-            <span className="text-sm text-gray-400">mmHg</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500">mmHg</span>
           </div>
-          <p className="text-xs text-gray-400">Normal: 120/80 mmHg</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Normal: 120/80 mmHg</p>
         </div>
 
         {/* SpO2 */}
@@ -107,11 +107,11 @@ export function VitalsInput({ value = {}, onChange }: VitalsInputProps) {
               value={value?.spO2 ?? ""}
               onChange={(e) => handleChange("spO2", e.target.value)}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
               %
             </span>
           </div>
-          <p className="text-xs text-gray-400">Normal: 95-100%</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Normal: 95-100%</p>
         </div>
       </div>
     </div>

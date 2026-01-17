@@ -29,7 +29,7 @@ export function LifestyleInput({ value = {}, onChange }: LifestyleInputProps) {
     <div className="space-y-6">
       <div>
         <Label className="text-base font-medium">Lifestyle Factors</Label>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Track factors that may affect your health
         </p>
       </div>
@@ -54,11 +54,11 @@ export function LifestyleInput({ value = {}, onChange }: LifestyleInputProps) {
                 )
               }
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
               hrs
             </span>
           </div>
-          <p className="text-xs text-gray-400">Recommended: 7-9 hours</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Recommended: 7-9 hours</p>
         </div>
 
         {/* Stress Level */}
@@ -122,7 +122,7 @@ export function LifestyleInput({ value = {}, onChange }: LifestyleInputProps) {
       </div>
 
       {/* Exercise */}
-      <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+      <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
         <Checkbox
           id="exercise"
           checked={value?.exercise || false}
@@ -132,7 +132,7 @@ export function LifestyleInput({ value = {}, onChange }: LifestyleInputProps) {
           <Label htmlFor="exercise" className="cursor-pointer font-medium">
             Exercised Today
           </Label>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Any physical activity (walking, gym, sports, etc.)
           </p>
         </div>

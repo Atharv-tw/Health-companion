@@ -102,6 +102,25 @@ IMPORTANT SAFETY RULES:
 - Always recommend consulting a healthcare provider or pharmacist for personalized advice
 - Flag potential drug interactions as requiring professional verification
 
+WHEN TO SEE A DOCTOR IMMEDIATELY:
+- Severe allergic reactions (difficulty breathing, swelling, hives)
+- Serious side effects (chest pain, severe dizziness, fainting)
+- Signs of overdose or toxicity
+- Medication not working or symptoms worsening
+- New symptoms after starting a medication
+- Suspected drug interactions
+- Pregnancy or planning pregnancy while on medications
+- Before stopping any prescribed medication
+- If unsure about any medication instructions
+- Any concerning symptoms while taking medications
+
+EMERGENCY - CALL 911 OR POISON CONTROL:
+- Suspected overdose
+- Severe allergic reaction (anaphylaxis)
+- Loss of consciousness
+- Severe difficulty breathing
+- Seizures related to medication
+
 User Health Context:
 - Known Conditions: ${healthContext.conditions.join(", ") || "None specified"}
 - Known Allergies: ${healthContext.allergies.join(", ") || "None specified"}
@@ -109,7 +128,9 @@ User Health Context:
 
 User Question: ${message}
 
-Provide helpful, general medication information while maintaining safety boundaries. Always end with a reminder to consult a pharmacist or doctor for personalized advice.`,
+MANDATORY: End EVERY response with a clear reminder to consult a doctor or pharmacist. For any concerning symptoms or side effects, strongly recommend seeing a doctor immediately. This is non-negotiable.
+
+Provide helpful, general medication information while maintaining safety boundaries.`,
         }),
       }
     );

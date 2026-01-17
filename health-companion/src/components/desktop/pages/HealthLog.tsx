@@ -192,10 +192,10 @@ export function DesktopHealthLog() {
                     )}
                   </div>
 
-                  <div className="flex justify-between pt-8 border-t border-gray-50">
+                  <div className="flex justify-between pt-8 border-t border-gray-100 dark:border-gray-700">
                     <Button
                       variant="ghost"
-                      className="rounded-full px-6 h-12 uppercase text-[10px] font-bold tracking-widest text-gray-400 hover:text-gray-900"
+                      className="rounded-full px-6 h-12 uppercase text-[10px] font-bold tracking-widest text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
                       onClick={handleBack}
                       disabled={currentStepIndex === 0}
                     >
@@ -203,7 +203,7 @@ export function DesktopHealthLog() {
                     </Button>
 
                     {currentStep !== "review" ? (
-                      <Button className="rounded-full px-8 h-12 uppercase text-[10px] font-bold tracking-widest bg-gray-900 text-white" onClick={handleNext}>
+                      <Button className="rounded-full px-8 h-12 uppercase text-[10px] font-bold tracking-widest bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-black dark:hover:bg-white" onClick={handleNext}>
                         Continue <ArrowRight className="ml-2 w-4 h-4" />
                       </Button>
                     ) : (
@@ -224,9 +224,9 @@ export function DesktopHealthLog() {
 
 function ReviewSection({ title, data }: { title: string; data: string }) {
   return (
-    <div className="p-6 bg-gray-50 rounded-3xl space-y-2 border border-gray-100">
+    <div className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-3xl space-y-2 border border-gray-100 dark:border-gray-600">
       <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary">{title}</h4>
-      <p className="text-gray-600 font-medium">{data}</p>
+      <p className="text-gray-600 dark:text-gray-300 font-medium">{data}</p>
     </div>
   );
 }

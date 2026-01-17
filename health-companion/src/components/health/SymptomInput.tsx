@@ -68,7 +68,7 @@ export function SymptomInput({ value, onChange }: SymptomInputProps) {
       {/* Common Symptoms Checklist */}
       <div>
         <Label className="text-base font-medium">Common Symptoms</Label>
-        <p className="text-sm text-gray-500 mb-3">Select any symptoms you&apos;re experiencing</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Select any symptoms you&apos;re experiencing</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {COMMON_SYMPTOMS.map((symptom) => (
             <div key={symptom} className="flex items-center space-x-2">
@@ -94,12 +94,12 @@ export function SymptomInput({ value, onChange }: SymptomInputProps) {
       {value.items.length > 0 && (
         <div>
           <Label className="text-base font-medium">Symptom Details</Label>
-          <p className="text-sm text-gray-500 mb-3">Specify severity and duration</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Specify severity and duration</p>
           <div className="space-y-3">
             {value.items.map((item) => (
               <div
                 key={item.name}
-                className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
               >
                 <Badge variant="secondary" className="font-medium">
                   {item.name}
@@ -138,7 +138,7 @@ export function SymptomInput({ value, onChange }: SymptomInputProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleSymptomToggle(item.name, false)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
                 >
                   Remove
                 </Button>
@@ -153,7 +153,7 @@ export function SymptomInput({ value, onChange }: SymptomInputProps) {
         <Label htmlFor="freeText" className="text-base font-medium">
           Additional Notes
         </Label>
-        <p className="text-sm text-gray-500 mb-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
           Describe any other symptoms or relevant information
         </p>
         <Textarea

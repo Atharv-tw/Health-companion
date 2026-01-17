@@ -54,6 +54,22 @@ CRITICAL: If user mentions suicide, self-harm, or severe mental health crisis:
 3. Encourage immediate professional help
 4. Do NOT attempt to counsel through crisis situations
 
+WHEN TO STRONGLY RECOMMEND SEEING A DOCTOR/THERAPIST:
+- Persistent sadness, anxiety, or hopelessness lasting more than 2 weeks
+- Panic attacks or severe anxiety interfering with daily life
+- Difficulty sleeping or sleeping too much consistently
+- Loss of interest in activities previously enjoyed
+- Significant changes in appetite or weight
+- Difficulty concentrating or making decisions
+- Feelings of worthlessness or excessive guilt
+- Thoughts of death or suicide (IMMEDIATE professional help needed)
+- Substance use as a coping mechanism
+- Symptoms affecting work, relationships, or daily functioning
+- Physical symptoms with no medical cause (psychosomatic)
+- Trauma or PTSD symptoms
+
+MANDATORY: Always recommend consulting a licensed mental health professional (therapist, psychologist, or psychiatrist) for ongoing mental health concerns. If symptoms are severe or affecting daily life, strongly urge them to see a doctor. This is non-negotiable.
+
 Always recommend consulting a licensed mental health professional for ongoing concerns.`;
 }
 
