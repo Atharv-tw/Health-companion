@@ -73,40 +73,34 @@ export default function SOSButton({ initialContacts }: SOSButtonProps) {
             <p className="text-red-900 font-medium">Contacting your safety network...</p>
         </div>
 
-        <div className="w-full space-y-4">
+        <div className="w-full space-y-3">
             {initialContacts.map(contact => (
-                <a 
-                    key={contact.id} 
+                <a
+                    key={contact.id}
                     href={`tel:${contact.phone}`}
-                    className="flex items-center justify-between p-4 bg-white border-2 border-red-100 rounded-lg hover:bg-red-50 transition-colors shadow-sm group"
+                    className="flex items-center gap-3 p-3 bg-white border-2 border-red-100 rounded-lg hover:bg-red-50 transition-colors shadow-sm group"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 group-hover:bg-red-200">
-                            <Phone className="h-5 w-5" />
-                        </div>
-                        <div className="text-left">
-                            <p className="font-bold text-gray-900">{contact.name}</p>
-                            <p className="text-sm text-gray-500">{contact.relationship}</p>
-                        </div>
+                    <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 group-hover:bg-red-200 flex-shrink-0">
+                        <Phone className="h-5 w-5" />
                     </div>
-                    <span className="font-mono font-medium text-lg text-gray-700">{contact.phone}</span>
+                    <div className="text-left min-w-0 flex-1">
+                        <p className="font-bold text-gray-900 truncate">{contact.name}</p>
+                        <p className="text-sm text-gray-500 truncate">{contact.relationship} • {contact.phone}</p>
+                    </div>
                 </a>
             ))}
             
-            <a 
+            <a
                 href="tel:112"
-                className="flex items-center justify-between p-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md"
+                className="flex items-center gap-3 p-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md"
             >
-                 <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center">
-                        <ShieldAlert className="h-5 w-5" />
-                    </div>
-                    <div className="text-left">
-                        <p className="font-bold">Emergency Services</p>
-                        <p className="text-sm text-white/80">Local Ambulance/Police</p>
-                    </div>
+                <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <ShieldAlert className="h-5 w-5" />
                 </div>
-                <span className="font-mono font-medium text-lg">112</span>
+                <div className="text-left min-w-0 flex-1">
+                    <p className="font-bold truncate">Emergency Services</p>
+                    <p className="text-sm text-white/80 truncate">Local Ambulance/Police • 112</p>
+                </div>
             </a>
         </div>
 

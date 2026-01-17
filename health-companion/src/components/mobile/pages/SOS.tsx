@@ -49,24 +49,21 @@ export function MobileSOS() {
         <div className="w-10" />
       </div>
 
-      <main className="flex-1 pt-24 px-6 space-y-12 flex flex-col items-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-5xl font-bold tracking-tighter text-gray-900 leading-[0.9] uppercase">
-            Acute <br />
-            <span className="text-red-600">Distress.</span>
+      <main className="flex-1 pt-20 px-4 space-y-8 flex flex-col items-center overflow-x-hidden">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold tracking-tighter text-gray-900 leading-tight uppercase">
+            Acute <span className="text-red-600">Distress</span>
           </h1>
         </div>
 
-        <div className="scale-125 py-10">
+        <div className="w-full max-w-[280px] py-4">
           <SOSButton initialContacts={contacts} />
         </div>
 
-        <div className="w-full space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tighter text-center">Protocol Nodes</h2>
-          </div>
-          
-          <div className="bg-white border border-white shadow-2xl rounded-[2.5rem] p-6">
+        <div className="w-full space-y-4">
+          <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight text-center">Protocol Nodes</h2>
+
+          <div className="bg-white border border-gray-100 shadow-xl rounded-3xl p-4 overflow-hidden">
             <EmergencyContacts contacts={contacts} />
           </div>
         </div>

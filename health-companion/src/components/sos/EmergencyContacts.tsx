@@ -63,26 +63,26 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
       <CardContent className="space-y-4">
         {/* Add Form */}
         {isAdding && (
-          <form onSubmit={handleSubmit} className="p-4 border rounded-md bg-gray-50 space-y-3">
+          <form onSubmit={handleSubmit} className="p-3 border rounded-lg bg-gray-50 space-y-3">
             <div className="space-y-1">
-                <Label>Name</Label>
-                <Input value={name} onChange={e => setName(e.target.value)} required />
+                <Label className="text-xs">Name</Label>
+                <Input value={name} onChange={e => setName(e.target.value)} required className="h-9" />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="space-y-1">
-                    <Label>Phone</Label>
-                    <Input value={phone} onChange={e => setPhone(e.target.value)} required type="tel" />
+                    <Label className="text-xs">Phone</Label>
+                    <Input value={phone} onChange={e => setPhone(e.target.value)} required type="tel" className="h-9" />
                 </div>
                 <div className="space-y-1">
-                    <Label>Relation</Label>
-                    <Input value={relationship} onChange={e => setRelationship(e.target.value)} placeholder="e.g. Mom" />
+                    <Label className="text-xs">Relation</Label>
+                    <Input value={relationship} onChange={e => setRelationship(e.target.value)} placeholder="e.g. Mom" className="h-9" />
                 </div>
             </div>
             <div className="space-y-1">
-                <Label>Email (Optional)</Label>
-                <Input value={email} onChange={e => setEmail(e.target.value)} type="email" />
+                <Label className="text-xs">Email (Optional)</Label>
+                <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-9" />
             </div>
-            <div className="flex justify-end gap-2 mt-2">
+            <div className="flex justify-end gap-2 pt-1">
                 <Button type="button" variant="ghost" size="sm" onClick={() => setIsAdding(false)}>Cancel</Button>
                 <Button type="submit" size="sm" disabled={loading}>Save</Button>
             </div>
@@ -94,25 +94,27 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
           {contacts.length === 0 && !isAdding && <p className="text-gray-500 text-sm">No contacts added.</p>}
           
           {contacts.map(contact => (
-            <div key={contact.id} className="flex items-center justify-between p-3 border rounded-lg bg-white shadow-sm">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 font-medium">
-                        <User className="h-4 w-4 text-gray-400" />
-                        {contact.name} 
-                        {contact.relationship && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{contact.relationship}</span>}
+            <div key={contact.id} className="flex items-start justify-between gap-2 p-3 border rounded-lg bg-white shadow-sm">
+                <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1 font-medium">
+                        <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{contact.name}</span>
+                        {contact.relationship && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">{contact.relationship}</span>}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" /> {contact.phone}
+                            <Phone className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{contact.phone}</span>
                         </div>
                         {contact.email && (
-                            <div className="flex items-center gap-1">
-                                <Mail className="h-3 w-3" /> {contact.email}
+                            <div className="flex items-center gap-1 min-w-0">
+                                <Mail className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate text-xs">{contact.email}</span>
                             </div>
                         )}
                     </div>
                 </div>
-                <Button size="icon" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(contact.id)}>
+                <Button size="icon" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 flex-shrink-0" onClick={() => handleDelete(contact.id)}>
                     <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
