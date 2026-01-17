@@ -9,7 +9,7 @@ import { z } from "zod";
 
 const chatRequestSchema = z.object({
   message: z.string().min(1, "Message is required"),
-  sessionId: z.string().optional(),
+  sessionId: z.string().nullable().optional(),
 });
 
 // Interfaces for health data
