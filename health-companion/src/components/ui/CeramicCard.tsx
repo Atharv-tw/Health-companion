@@ -86,8 +86,8 @@ export function CeramicCard({
       } : undefined}
       className={cn(
         "bg-card text-card-foreground rounded-3xl p-6",
-        "border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
-        "backdrop-blur-sm bg-white/80",
+        "border border-white/50 dark:border-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]",
+        "backdrop-blur-sm bg-white/80 dark:bg-gray-800/80",
         "relative",
         className
       )}

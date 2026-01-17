@@ -94,7 +94,7 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
           {contacts.length === 0 && !isAdding && <p className="text-gray-500 text-sm">No contacts added.</p>}
           
           {contacts.map(contact => (
-            <div key={contact.id} className="flex items-start justify-between gap-2 p-3 border rounded-lg bg-white shadow-sm">
+            <div key={contact.id} className="flex items-start justify-between gap-2 p-3 border rounded-lg bg-white shadow-sm overflow-hidden">
                 <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1 font-medium">
                         <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -107,9 +107,9 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
                             <span className="truncate">{contact.phone}</span>
                         </div>
                         {contact.email && (
-                            <div className="flex items-center gap-1 min-w-0">
+                            <div className="flex items-center gap-1 min-w-0 max-w-full overflow-hidden">
                                 <Mail className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate text-xs">{contact.email}</span>
+                                <span className="truncate text-xs max-w-[120px]">{contact.email}</span>
                             </div>
                         )}
                     </div>

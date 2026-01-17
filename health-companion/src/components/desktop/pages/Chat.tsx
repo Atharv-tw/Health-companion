@@ -129,7 +129,7 @@ export function DesktopChat() {
       <ShimmerBackground />
 
       {/* Top Bar with Mode Selector */}
-      <div className="w-full border-b border-gray-100 bg-white/40 backdrop-blur-md px-10 py-5 flex items-center justify-between z-30">
+      <div className="w-full border-b border-gray-100 dark:border-gray-800 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md px-10 py-5 flex items-center justify-between z-30">
         <div className="flex items-center gap-8">
           <div className="w-4 hidden lg:block" />
 
@@ -137,7 +137,7 @@ export function DesktopChat() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowModeMenu(!showModeMenu)}
-              className={`flex items-center gap-3 px-4 py-2 rounded-xl border border-gray-100 hover:border-gray-200 transition-all ${currentMode.bgColor}`}
+              className={`flex items-center gap-3 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all ${currentMode.bgColor} dark:bg-gray-800/50`}
             >
               <ModeIcon className={`w-5 h-5 ${currentMode.color}`} />
               <div className="flex flex-col items-start">
@@ -156,7 +156,7 @@ export function DesktopChat() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-50"
+                  className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50"
                 >
                   {(Object.keys(CHAT_MODES) as ChatMode[]).map((mode) => {
                     const modeConfig = CHAT_MODES[mode];
@@ -167,18 +167,18 @@ export function DesktopChat() {
                       <button
                         key={mode}
                         onClick={() => handleModeSwitch(mode)}
-                        className={`w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors ${
-                          isActive ? modeConfig.bgColor : ""
+                        className={`w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+                          isActive ? modeConfig.bgColor + " dark:bg-gray-700/30" : ""
                         }`}
                       >
-                        <div className={`p-2 rounded-xl ${modeConfig.bgColor}`}>
+                        <div className={`p-2 rounded-xl ${modeConfig.bgColor} dark:bg-gray-700/50`}>
                           <Icon className={`w-5 h-5 ${modeConfig.color}`} />
                         </div>
                         <div className="flex flex-col items-start">
-                          <span className={`text-sm font-bold ${isActive ? modeConfig.color : "text-gray-900"}`}>
+                          <span className={`text-sm font-bold ${isActive ? modeConfig.color : "text-gray-900 dark:text-gray-100"}`}>
                             {modeConfig.name}
                           </span>
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">
                             {modeConfig.description}
                           </span>
                         </div>
@@ -193,7 +193,7 @@ export function DesktopChat() {
             </AnimatePresence>
           </div>
 
-          <div className="h-8 w-px bg-gray-100" />
+          <div className="h-8 w-px bg-gray-100 dark:bg-gray-700" />
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
             <span className="text-[11px] font-bold text-green-600 uppercase tracking-[0.2em]">Secure Link Established</span>
@@ -237,15 +237,15 @@ export function DesktopChat() {
         </div>
 
         {/* Input Bar */}
-        <div className="absolute bottom-0 left-0 right-0 p-10 z-40 bg-gradient-to-t from-[#FAFAF9] via-[#FAFAF9]/80 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 p-10 z-40 bg-gradient-to-t from-[#FAFAF9] dark:from-gray-900 via-[#FAFAF9]/80 dark:via-gray-900/80 to-transparent">
           <div className="max-w-5xl mx-auto">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="relative group"
             >
-              <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] blur-3xl group-focus-within:bg-primary/10 transition-all opacity-50" />
-              <div className="relative flex items-center bg-white border border-gray-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-2 pr-5">
+              <div className="absolute inset-0 bg-primary/5 dark:bg-primary/10 rounded-[2.5rem] blur-3xl group-focus-within:bg-primary/10 dark:group-focus-within:bg-primary/20 transition-all opacity-50" />
+              <div className="relative flex items-center bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] rounded-[2.5rem] p-2 pr-5">
                 <div className={`pl-8 ${currentMode.color} opacity-40 group-focus-within:opacity-100 transition-colors`}>
                   <ModeIcon className="w-6 h-6" />
                 </div>
@@ -254,19 +254,19 @@ export function DesktopChat() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={currentMode.placeholder}
-                  className="flex-1 bg-transparent border-none focus:ring-0 text-lg font-light py-5 px-6 placeholder:text-gray-300"
+                  className="flex-1 bg-transparent border-none focus:ring-0 text-lg font-light py-5 px-6 placeholder:text-gray-300 dark:placeholder:text-gray-600 dark:text-gray-100"
                 />
                 <Button
                   onClick={handleSend}
                   disabled={isLoading || !input.trim()}
-                  className="h-14 px-10 rounded-2xl bg-gray-900 text-white hover:bg-black uppercase text-[11px] font-bold tracking-[0.2em] transition-all shadow-xl active:scale-95"
+                  className="h-14 px-10 rounded-2xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-black dark:hover:bg-white uppercase text-[11px] font-bold tracking-[0.2em] transition-all shadow-xl active:scale-95"
                 >
                   Query <Send className="ml-3 w-4 h-4" />
                 </Button>
               </div>
             </motion.div>
 
-            <p className="text-center mt-6 text-[9px] font-bold text-gray-400 uppercase tracking-[0.4em] opacity-50">
+            <p className="text-center mt-6 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.4em] opacity-50">
               {chatMode === "nutrition"
                 ? "Nutrition Advisor • Reads Your Health Data • Consult a Dietitian"
                 : chatMode === "mental"

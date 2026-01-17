@@ -94,12 +94,12 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
   };
 
   const getAQIBgColor = (value: number | null): string => {
-    if (value === null) return "bg-gray-100";
-    if (value <= 50) return "bg-green-50";
-    if (value <= 100) return "bg-yellow-50";
-    if (value <= 150) return "bg-orange-50";
-    if (value <= 200) return "bg-red-50";
-    return "bg-purple-50";
+    if (value === null) return "bg-gray-100 dark:bg-gray-700";
+    if (value <= 50) return "bg-green-50 dark:bg-green-900/30";
+    if (value <= 100) return "bg-yellow-50 dark:bg-yellow-900/30";
+    if (value <= 150) return "bg-orange-50 dark:bg-orange-900/30";
+    if (value <= 200) return "bg-red-50 dark:bg-red-900/30";
+    return "bg-purple-50 dark:bg-purple-900/30";
   };
 
   const aqi = airData ? extractAQI(airData.data) : { value: null, category: "Loading" };
@@ -109,7 +109,7 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`p-4 rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm ${className}`}
+        className={`p-4 rounded-2xl border border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm ${className}`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
               <Wind className={`w-4 h-4 ${getAQIColor(aqi.value)}`} />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Air Quality</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Air Quality</p>
               <p className={`text-lg font-bold ${getAQIColor(aqi.value)}`}>
                 {isLoading ? "..." : aqi.value ?? "--"}
               </p>
@@ -128,7 +128,7 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
             <button
               onClick={fetchAirQuality}
               disabled={isLoading}
-              className="text-[9px] text-gray-400 hover:text-primary flex items-center gap-1 mt-1"
+              className="text-[9px] text-gray-400 dark:text-gray-500 hover:text-primary flex items-center gap-1 mt-1"
             >
               <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
               Refresh

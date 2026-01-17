@@ -23,14 +23,16 @@ export default function SOSButton({ initialContacts }: SOSButtonProps) {
 
   if (status === 'IDLE') {
     return (
-      <button
-        onClick={() => setStatus('CONFIRM')}
-        className="w-full aspect-square max-w-[250px] rounded-full bg-red-100 border-4 border-red-500 flex flex-col items-center justify-center gap-2 hover:bg-red-200 transition-all shadow-xl hover:scale-105 active:scale-95 group mx-auto"
-      >
-        <ShieldAlert className="h-20 w-20 text-red-600 group-hover:text-red-700 transition-colors" />
-        <span className="text-2xl font-bold text-red-700">SOS</span>
+      <div className="flex flex-col items-center gap-4">
+        <button
+          onClick={() => setStatus('CONFIRM')}
+          className="w-full aspect-square max-w-[200px] rounded-full bg-red-100 border-4 border-red-500 flex flex-col items-center justify-center gap-1 hover:bg-red-200 transition-all shadow-xl hover:scale-105 active:scale-95 group mx-auto"
+        >
+          <ShieldAlert className="h-16 w-16 text-red-600 group-hover:text-red-700 transition-colors" />
+          <span className="text-2xl font-bold text-red-700">SOS</span>
+        </button>
         <span className="text-sm text-red-600 font-medium uppercase tracking-wider">Tap for Help</span>
-      </button>
+      </div>
     );
   }
 

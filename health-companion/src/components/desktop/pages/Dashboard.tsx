@@ -130,11 +130,11 @@ export function DesktopDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* 1. Health Status Orb (Centerpiece) */}
-        <CeramicCard tiltEffect={false} className="md:col-span-1 flex flex-col items-center justify-center py-10 bg-white/60 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <h2 className="text-sm uppercase tracking-widest text-gray-400 mb-6 font-medium">Current Status</h2>
+        <CeramicCard tiltEffect={false} className="md:col-span-1 flex flex-col items-center justify-center py-10 bg-white/60 dark:bg-gray-800/60 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 dark:from-blue-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <h2 className="text-sm uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-6 font-medium">Current Status</h2>
           <HealthOrb status={healthData?.summary.latestRiskLevel as any || "LOW"} />
-          <p className="mt-6 text-2xl font-light text-gray-700">
+          <p className="mt-6 text-2xl font-light text-gray-700 dark:text-gray-300">
             {healthData?.summary.latestRiskLevel || "Optimal"}
           </p>
         </CeramicCard>
@@ -143,10 +143,10 @@ export function DesktopDashboard() {
         <CeramicCard tiltEffect={false} delay={0.1} className="md:col-span-2 flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-xl font-medium text-gray-800">Latest Insights</h3>
-              <p className="text-sm text-gray-400 mt-1">
-                {healthData?.latestLog 
-                  ? new Date(healthData.latestLog.createdAt).toLocaleDateString(undefined, { weekday: 'long', hour: 'numeric', minute: 'numeric' }) 
+              <h3 className="text-xl font-medium text-gray-800 dark:text-gray-100">Latest Insights</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                {healthData?.latestLog
+                  ? new Date(healthData.latestLog.createdAt).toLocaleDateString(undefined, { weekday: 'long', hour: 'numeric', minute: 'numeric' })
                   : "No recent activity"}
               </p>
             </div>
@@ -159,41 +159,41 @@ export function DesktopDashboard() {
 
           <div className="mt-6 grid grid-cols-2 gap-4">
             {healthData?.latestLog?.symptoms.items.length ? (
-               <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                 <p className="text-xs text-gray-400 uppercase mb-2">Symptoms</p>
-                 <div className="flex flex-wrap gap-1">
-                   {healthData.latestLog.symptoms.items.slice(0, 3).map(s => (
-                     <span key={s.name} className="px-2 py-1 bg-white text-gray-600 rounded-md text-xs shadow-sm border border-gray-100">{s.name}</span>
-                   ))}
-                   {healthData.latestLog.symptoms.items.length > 3 && (
-                     <span className="px-2 py-1 text-xs text-gray-400">+More</span>
-                   )}
-                 </div>
-               </div>
+              <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600">
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase mb-2">Symptoms</p>
+                <div className="flex flex-wrap gap-1">
+                  {healthData.latestLog.symptoms.items.slice(0, 3).map(s => (
+                    <span key={s.name} className="px-2 py-1 bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-md text-xs shadow-sm border border-gray-100 dark:border-gray-500">{s.name}</span>
+                  ))}
+                  {healthData.latestLog.symptoms.items.length > 3 && (
+                    <span className="px-2 py-1 text-xs text-gray-400 dark:text-gray-500">+More</span>
+                  )}
+                </div>
+              </div>
             ) : (
-              <div className="p-4 bg-green-50/50 rounded-2xl border border-green-100/50 flex items-center justify-center text-green-700 text-sm">
-                 All Clear
+              <div className="p-4 bg-green-50/50 dark:bg-green-900/20 rounded-2xl border border-green-100/50 dark:border-green-800/50 flex items-center justify-center text-green-700 dark:text-green-400 text-sm">
+                All Clear
               </div>
             )}
 
             <div className="space-y-2">
-               {/* Mini Vitals */}
-               <div className="flex justify-between items-center p-2 px-3 bg-blue-50/30 rounded-xl">
-                 <div className="flex items-center gap-2 text-blue-600">
-                   <Activity className="w-4 h-4" />
-                   <span className="text-xs font-medium">Heart</span>
-                 </div>
-                 <span className="text-sm font-bold text-gray-700">{healthData?.latestLog?.vitals?.heartRate || "--"} <span className="text-xs font-normal text-gray-400">bpm</span></span>
-               </div>
-               
-               {/* Mini Lifestyle */}
-               <div className="flex justify-between items-center p-2 px-3 bg-purple-50/30 rounded-xl">
-                  <div className="flex items-center gap-2 text-purple-600">
-                    <Moon className="w-4 h-4" />
-                    <span className="text-xs font-medium">Sleep</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-700">{healthData?.latestLog?.lifestyle?.sleepHours as number || "--"} <span className="text-xs font-normal text-gray-400">hr</span></span>
-               </div>
+              {/* Mini Vitals */}
+              <div className="flex justify-between items-center p-2 px-3 bg-blue-50/30 dark:bg-blue-900/20 rounded-xl">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                  <Activity className="w-4 h-4" />
+                  <span className="text-xs font-medium">Heart</span>
+                </div>
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{healthData?.latestLog?.vitals?.heartRate || "--"} <span className="text-xs font-normal text-gray-400 dark:text-gray-500">bpm</span></span>
+              </div>
+
+              {/* Mini Lifestyle */}
+              <div className="flex justify-between items-center p-2 px-3 bg-purple-50/30 dark:bg-purple-900/20 rounded-xl">
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                  <Moon className="w-4 h-4" />
+                  <span className="text-xs font-medium">Sleep</span>
+                </div>
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{healthData?.latestLog?.lifestyle?.sleepHours as number || "--"} <span className="text-xs font-normal text-gray-400 dark:text-gray-500">hr</span></span>
+              </div>
             </div>
           </div>
         </CeramicCard>
@@ -245,15 +245,15 @@ export function DesktopDashboard() {
 function StatsCard({ label, value, unit, icon: Icon, color, delay }: any) {
   return (
     <CeramicCard tiltEffect={false} delay={delay} className="flex flex-col items-center justify-center py-6 gap-2 text-center hover:scale-[1.02] transition-transform">
-       <div className={`p-3 rounded-full bg-white shadow-sm ${color} mb-1`}>
-         <Icon className="w-5 h-5" />
-       </div>
-       <div className="text-2xl font-light text-gray-900">
-         {value} <span className="text-xs text-gray-400 font-normal">{unit}</span>
-       </div>
-       <div className="text-xs font-medium uppercase tracking-wider text-gray-400">{label}</div>
+      <div className={`p-3 rounded-full bg-white dark:bg-gray-700 shadow-sm ${color} mb-1`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="text-2xl font-light text-gray-900 dark:text-gray-100">
+        {value} <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">{unit}</span>
+      </div>
+      <div className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">{label}</div>
     </CeramicCard>
-  )
+  );
 }
 
 function QuickAction({ href, icon: Icon, label, alert }: any) {
