@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  Home, 
-  MessageCircle, 
-  Activity, 
-  FileText, 
-  Bell, 
-  AlertCircle 
+import {
+  Home,
+  MessageCircle,
+  Activity,
+  FileText,
+  Bell,
+  AlertCircle,
+  Apple
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { name: "Oracle Chat", href: "/chat", icon: MessageCircle, primary: true },
+  { name: "Nutrition", href: "/nutrition", icon: Apple },
   { name: "Vitality Profile", href: "/dashboard", icon: Home },
   { name: "Health Log", href: "/log", icon: Activity },
   { name: "Reports", href: "/reports", icon: FileText },
