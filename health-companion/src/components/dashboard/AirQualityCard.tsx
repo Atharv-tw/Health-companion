@@ -143,7 +143,7 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-6 rounded-3xl border border-gray-100 bg-white/80 backdrop-blur-xl shadow-lg ${className}`}
+      className={`p-6 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-lg ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -152,8 +152,8 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
             <Wind className={`w-5 h-5 ${getAQIColor(aqi.value)}`} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-800">Air Quality Index</h3>
-            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Air Quality Index</h3>
+            <div className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
               <MapPin className="w-3 h-3" />
               <span>{airData?.location || "Detecting..."}</span>
             </div>
@@ -162,9 +162,9 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
         <button
           onClick={fetchAirQuality}
           disabled={isLoading}
-          className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
-          <RefreshCw className={`w-4 h-4 text-gray-400 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 text-gray-400 dark:text-gray-500 ${isLoading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
@@ -187,9 +187,9 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
 
           {/* AI Insights */}
           {airData && !isLoading && (
-            <div className="p-4 bg-gray-50 rounded-2xl">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">AI Insights</p>
-              <p className="text-xs text-gray-600 leading-relaxed line-clamp-4">
+            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">AI Insights</p>
+              <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-4">
                 {airData.data.substring(0, 300)}...
               </p>
             </div>
@@ -197,7 +197,7 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
 
           {/* Last Updated */}
           {lastUpdated && (
-            <p className="text-[9px] text-gray-400 mt-3 text-center">
+            <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-3 text-center">
               Updated {lastUpdated.toLocaleTimeString()} • Auto-refreshes every 10 min
             </p>
           )}
