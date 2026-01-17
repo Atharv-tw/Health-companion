@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple } from "lucide-react";
+import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,7 @@ interface Message {
   content: string;
 }
 
-type ChatMode = "health" | "nutrition";
+type ChatMode = "health" | "nutrition" | "mental";
 
 const CHAT_MODES = {
   health: {
@@ -25,6 +25,7 @@ const CHAT_MODES = {
     greeting: "Clinical systems online. Authenticated. How can I help?",
     color: "text-primary",
     bgColor: "bg-primary/5",
+    description: "General health guidance",
   },
   nutrition: {
     name: "Nutrition Advisor",
@@ -35,6 +36,18 @@ const CHAT_MODES = {
     greeting: "Nutrition Advisor ready. I can see your health data. How can I help with your diet?",
     color: "text-green-600",
     bgColor: "bg-green-50",
+    description: "Diet & nutrition advice",
+  },
+  mental: {
+    name: "Mental Wellness",
+    shortName: "Wellness",
+    icon: Brain,
+    endpoint: "/api/mental-wellness",
+    placeholder: "Share how you're feeling...",
+    greeting: "Mental Wellness support active. I'm here for stress management and emotional support. How are you feeling?",
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+    description: "Stress & emotional support",
   },
 };
 
@@ -157,7 +170,7 @@ export function MobileChat() {
                         {modeConfig.name}
                       </span>
                       <span className="text-[10px] text-gray-400">
-                        {mode === "health" ? "General health guidance" : "Diet & nutrition advice"}
+                        {modeConfig.description}
                       </span>
                     </div>
                     {isActive && (

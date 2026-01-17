@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, Sparkles, ChevronDown, Stethoscope, Apple } from "lucide-react";
+import { Send, Sparkles, ChevronDown, Stethoscope, Apple, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
@@ -13,7 +13,7 @@ interface Message {
   content: string;
 }
 
-type ChatMode = "health" | "nutrition";
+type ChatMode = "health" | "nutrition" | "mental";
 
 const CHAT_MODES = {
   health: {
@@ -24,6 +24,7 @@ const CHAT_MODES = {
     greeting: "### Oracle Link Established.\nReady to interpret your biological signals. How can I assist you?",
     color: "text-primary",
     bgColor: "bg-primary/5",
+    description: "General health guidance",
   },
   nutrition: {
     name: "Nutrition Advisor",
@@ -33,6 +34,17 @@ const CHAT_MODES = {
     greeting: "### Nutrition Advisor Online.\nI have access to your health logs and reports. How can I help with your diet?",
     color: "text-green-600",
     bgColor: "bg-green-50",
+    description: "Diet & nutrition advice",
+  },
+  mental: {
+    name: "Mental Wellness",
+    icon: Brain,
+    endpoint: "/api/mental-wellness",
+    placeholder: "Share how you're feeling, ask about stress management...",
+    greeting: "### Mental Wellness Support Active.\nI'm here to help with stress management and emotional well-being. How are you feeling today?",
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+    description: "Stress & emotional support",
   },
 };
 
@@ -157,7 +169,7 @@ export function DesktopChat() {
                             {modeConfig.name}
                           </span>
                           <span className="text-[10px] text-gray-400">
-                            {mode === "health" ? "General health guidance" : "Diet & nutrition advice"}
+                            {modeConfig.description}
                           </span>
                         </div>
                         {isActive && (
@@ -204,7 +216,9 @@ export function DesktopChat() {
               >
                 <div className={`w-2 h-2 rounded-full ${currentMode.color.replace("text-", "bg-")}`} />
                 <span className={`text-[11px] font-bold uppercase tracking-[0.3em] ${currentMode.color}`}>
-                  {chatMode === "nutrition" ? "Crafting Nutrition Plan..." : "Oracle Synthesizing Response..."}
+                  {chatMode === "nutrition" ? "Crafting Nutrition Plan..." :
+                   chatMode === "mental" ? "Processing Wellness Response..." :
+                   "Oracle Synthesizing Response..."}
                 </span>
               </motion.div>
             )}
@@ -244,6 +258,8 @@ export function DesktopChat() {
             <p className="text-center mt-6 text-[9px] font-bold text-gray-400 uppercase tracking-[0.4em] opacity-50">
               {chatMode === "nutrition"
                 ? "Nutrition Advisor • Reads Your Health Data • Consult a Dietitian"
+                : chatMode === "mental"
+                ? "Mental Wellness • Stress Management • Consult a Professional"
                 : "Neural Council Active • HIPAA-Ready Protocol • Data Encrypted"}
             </p>
           </div>
