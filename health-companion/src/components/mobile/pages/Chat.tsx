@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple, Brain } from "lucide-react";
+import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple, Brain, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,7 @@ interface Message {
   content: string;
 }
 
-type ChatMode = "health" | "nutrition" | "mental";
+type ChatMode = "health" | "nutrition" | "mental" | "herbi";
 
 const CHAT_MODES = {
   health: {
@@ -48,6 +48,17 @@ const CHAT_MODES = {
     color: "text-purple-600",
     bgColor: "bg-purple-50",
     description: "Stress & emotional support",
+  },
+  herbi: {
+    name: "Herbi Cure",
+    shortName: "Ayurveda",
+    icon: Leaf,
+    endpoint: "/api/herbi-cure",
+    placeholder: "Ask about Ayurvedic remedies...",
+    greeting: "Namaste! Herbi Cure here. I'm your Ayurveda companion for holistic wellness. How may I help?",
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    description: "Ayurvedic wellness guidance",
   },
 };
 

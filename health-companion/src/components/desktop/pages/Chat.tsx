@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, Sparkles, ChevronDown, Stethoscope, Apple, Brain } from "lucide-react";
+import { Send, Sparkles, ChevronDown, Stethoscope, Apple, Brain, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
@@ -13,7 +13,7 @@ interface Message {
   content: string;
 }
 
-type ChatMode = "health" | "nutrition" | "mental";
+type ChatMode = "health" | "nutrition" | "mental" | "herbi";
 
 const CHAT_MODES = {
   health: {
@@ -45,6 +45,16 @@ const CHAT_MODES = {
     color: "text-purple-600",
     bgColor: "bg-purple-50",
     description: "Stress & emotional support",
+  },
+  herbi: {
+    name: "Herbi Cure",
+    icon: Leaf,
+    endpoint: "/api/herbi-cure",
+    placeholder: "Ask about Ayurvedic remedies, herbs, yoga practices...",
+    greeting: "### Herbi Cure - Ayurveda Companion.\nNamaste! I'm here to guide you through traditional Ayurvedic wellness. How may I help balance your well-being today?",
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    description: "Ayurvedic wellness guidance",
   },
 };
 
@@ -218,6 +228,7 @@ export function DesktopChat() {
                 <span className={`text-[11px] font-bold uppercase tracking-[0.3em] ${currentMode.color}`}>
                   {chatMode === "nutrition" ? "Crafting Nutrition Plan..." :
                    chatMode === "mental" ? "Processing Wellness Response..." :
+                   chatMode === "herbi" ? "Consulting Ayurvedic Wisdom..." :
                    "Oracle Synthesizing Response..."}
                 </span>
               </motion.div>
@@ -260,6 +271,8 @@ export function DesktopChat() {
                 ? "Nutrition Advisor • Reads Your Health Data • Consult a Dietitian"
                 : chatMode === "mental"
                 ? "Mental Wellness • Stress Management • Consult a Professional"
+                : chatMode === "herbi"
+                ? "Herbi Cure • Ayurvedic Wisdom • Consult a Practitioner"
                 : "Neural Council Active • HIPAA-Ready Protocol • Data Encrypted"}
             </p>
           </div>

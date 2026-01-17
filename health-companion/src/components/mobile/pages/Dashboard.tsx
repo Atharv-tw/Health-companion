@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { HealthOrb } from "@/components/ui/HealthOrb";
+import { AirQualityCard } from "@/components/dashboard/AirQualityCard";
 import { Activity, MessageCircle, FileText, AlertCircle, Moon, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -102,21 +103,24 @@ export function MobileDashboard() {
 
         {/* Vital Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <MobileMetricCard 
-            icon={<Activity className="w-5 h-5" />} 
-            label="Heart" 
-            value={healthData?.latestLog?.vitals?.heartRate || "--"} 
+          <MobileMetricCard
+            icon={<Activity className="w-5 h-5" />}
+            label="Heart"
+            value={healthData?.latestLog?.vitals?.heartRate || "--"}
             unit="bpm"
             color="text-blue-500"
           />
-          <MobileMetricCard 
-            icon={<Moon className="w-5 h-5" />} 
-            label="Sleep" 
-            value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"} 
+          <MobileMetricCard
+            icon={<Moon className="w-5 h-5" />}
+            label="Sleep"
+            value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"}
             unit="hrs"
             color="text-purple-500"
           />
         </div>
+
+        {/* Air Quality */}
+        <AirQualityCard compact />
 
         {/* Latest Log Snapshot */}
         <div className="p-8 bg-gray-50 border border-gray-100 rounded-[2.5rem] space-y-6">

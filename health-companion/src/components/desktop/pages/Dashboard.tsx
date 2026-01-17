@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { HealthOrb } from "@/components/ui/HealthOrb";
+import { AirQualityCard } from "@/components/dashboard/AirQualityCard";
 import { Activity, MessageCircle, FileText, AlertCircle, Moon, Droplets } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -189,38 +190,42 @@ export function DesktopDashboard() {
 
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-         <StatsCard 
-            label="Total Logs" 
-            value={healthData?.summary.totalLogs || 0} 
-            icon={FileText} 
-            color="text-blue-500" 
-            delay={0.2}
-         />
-         <StatsCard 
-            label="Avg Heart Rate" 
-            value={healthData?.summary.vitals.averages.heartRate || "--"} 
-            unit="bpm"
-            icon={Activity} 
-            color="text-rose-500" 
-            delay={0.3}
-         />
-         <StatsCard 
-            label="Avg Sleep" 
-            value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"} 
-            unit="hrs"
-            icon={Moon} 
-            color="text-indigo-500" 
-            delay={0.4}
-         />
-         <StatsCard 
-            label="Hydration" 
-            value="Good" 
-            icon={Droplets} 
-            color="text-cyan-500" 
-            delay={0.5}
-         />
+      {/* Air Quality + Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <AirQualityCard className="md:col-span-1" />
+
+        <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
+           <StatsCard
+              label="Total Logs"
+              value={healthData?.summary.totalLogs || 0}
+              icon={FileText}
+              color="text-blue-500"
+              delay={0.2}
+           />
+           <StatsCard
+              label="Avg Heart Rate"
+              value={healthData?.summary.vitals.averages.heartRate || "--"}
+              unit="bpm"
+              icon={Activity}
+              color="text-rose-500"
+              delay={0.3}
+           />
+           <StatsCard
+              label="Avg Sleep"
+              value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"}
+              unit="hrs"
+              icon={Moon}
+              color="text-indigo-500"
+              delay={0.4}
+           />
+           <StatsCard
+              label="Hydration"
+              value="Good"
+              icon={Droplets}
+              color="text-cyan-500"
+              delay={0.5}
+           />
+        </div>
       </div>
 
       {/* Quick Actions (Floating Pill Style) */}

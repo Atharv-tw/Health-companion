@@ -1,0 +1,208 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { Wind, RefreshCw, MapPin, AlertTriangle } from "lucide-react";
+import { motion } from "framer-motion";
+
+interface AirQualityData {
+  data: string;
+  location: string;
+  timestamp: string;
+}
+
+interface AirQualityCardProps {
+  className?: string;
+  compact?: boolean;
+}
+
+export function AirQualityCard({ className = "", compact = false }: AirQualityCardProps) {
+  const [airData, setAirData] = useState<AirQualityData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchAirQuality = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Try to get user's location
+      let location = "Delhi, India"; // Default location
+
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          location = `${position.coords.latitude},${position.coords.longitude}`;
+        } catch {
+          // Use default location if geolocation fails
+        }
+      }
+
+      const res = await fetch(`/api/air-quality?location=${encodeURIComponent(location)}`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch air quality data");
+      }
+
+      const data = await res.json();
+      setAirData(data);
+      setLastUpdated(new Date());
+    } catch (err) {
+      setError("Unable to load air quality data");
+      console.error("Air quality fetch error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAirQuality();
+
+    // Auto-refresh every 10 minutes
+    const interval = setInterval(fetchAirQuality, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [fetchAirQuality]);
+
+  // Parse AQI from response (basic extraction)
+  const extractAQI = (text: string): { value: number | null; category: string } => {
+    const aqiMatch = text.match(/AQI[:\s]+(\d+)/i);
+    const value = aqiMatch ? parseInt(aqiMatch[1]) : null;
+
+    let category = "Unknown";
+    if (value !== null) {
+      if (value <= 50) category = "Good";
+      else if (value <= 100) category = "Moderate";
+      else if (value <= 150) category = "Unhealthy for Sensitive";
+      else if (value <= 200) category = "Unhealthy";
+      else if (value <= 300) category = "Very Unhealthy";
+      else category = "Hazardous";
+    }
+
+    return { value, category };
+  };
+
+  const getAQIColor = (value: number | null): string => {
+    if (value === null) return "text-gray-500";
+    if (value <= 50) return "text-green-500";
+    if (value <= 100) return "text-yellow-500";
+    if (value <= 150) return "text-orange-500";
+    if (value <= 200) return "text-red-500";
+    return "text-purple-600";
+  };
+
+  const getAQIBgColor = (value: number | null): string => {
+    if (value === null) return "bg-gray-100";
+    if (value <= 50) return "bg-green-50";
+    if (value <= 100) return "bg-yellow-50";
+    if (value <= 150) return "bg-orange-50";
+    if (value <= 200) return "bg-red-50";
+    return "bg-purple-50";
+  };
+
+  const aqi = airData ? extractAQI(airData.data) : { value: null, category: "Loading" };
+
+  if (compact) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`p-4 rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm ${className}`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl ${getAQIBgColor(aqi.value)}`}>
+              <Wind className={`w-4 h-4 ${getAQIColor(aqi.value)}`} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Air Quality</p>
+              <p className={`text-lg font-bold ${getAQIColor(aqi.value)}`}>
+                {isLoading ? "..." : aqi.value ?? "--"}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className={`text-xs font-medium ${getAQIColor(aqi.value)}`}>{aqi.category}</p>
+            <button
+              onClick={fetchAirQuality}
+              disabled={isLoading}
+              className="text-[9px] text-gray-400 hover:text-primary flex items-center gap-1 mt-1"
+            >
+              <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`p-6 rounded-3xl border border-gray-100 bg-white/80 backdrop-blur-xl shadow-lg ${className}`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-3 rounded-2xl ${getAQIBgColor(aqi.value)}`}>
+            <Wind className={`w-5 h-5 ${getAQIColor(aqi.value)}`} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-800">Air Quality Index</h3>
+            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+              <MapPin className="w-3 h-3" />
+              <span>{airData?.location || "Detecting..."}</span>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={fetchAirQuality}
+          disabled={isLoading}
+          className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+        >
+          <RefreshCw className={`w-4 h-4 text-gray-400 ${isLoading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {/* AQI Display */}
+      {error ? (
+        <div className="flex items-center gap-2 text-red-500 text-sm py-4">
+          <AlertTriangle className="w-4 h-4" />
+          {error}
+        </div>
+      ) : (
+        <>
+          <div className="flex items-end gap-3 mb-4">
+            <span className={`text-5xl font-light ${getAQIColor(aqi.value)}`}>
+              {isLoading ? "--" : aqi.value ?? "--"}
+            </span>
+            <span className={`text-sm font-medium pb-2 ${getAQIColor(aqi.value)}`}>
+              {aqi.category}
+            </span>
+          </div>
+
+          {/* AI Insights */}
+          {airData && !isLoading && (
+            <div className="p-4 bg-gray-50 rounded-2xl">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">AI Insights</p>
+              <p className="text-xs text-gray-600 leading-relaxed line-clamp-4">
+                {airData.data.substring(0, 300)}...
+              </p>
+            </div>
+          )}
+
+          {/* Last Updated */}
+          {lastUpdated && (
+            <p className="text-[9px] text-gray-400 mt-3 text-center">
+              Updated {lastUpdated.toLocaleTimeString()} • Auto-refreshes every 10 min
+            </p>
+          )}
+        </>
+      )}
+    </motion.div>
+  );
+}
