@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
-import { User, Sparkles, Database } from "lucide-react";
+import { User, Sparkles } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -45,12 +45,6 @@ export function DataStreamMessage({ message, delay = 0 }: DataStreamMessageProps
               {isAI ? "Clinical Intelligence Output" : "Subjective Input"}
             </span>
           </div>
-          {isAI && (
-            <div className="flex items-center gap-2 px-2 py-1 bg-green-50 dark:bg-green-900/30 rounded-md border border-green-100 dark:border-green-800">
-              <Database className="w-3 h-3 text-green-600 dark:text-green-400" />
-              <span className="text-[9px] font-bold text-green-700 dark:text-green-400 uppercase tracking-tighter">Verified RAG-8</span>
-            </div>
-          )}
         </div>
 
         {/* Content */}
