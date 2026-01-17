@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple, Brain, Leaf } from "lucide-react";
+import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple, Brain, Leaf, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,7 @@ interface Message {
   content: string;
 }
 
-type ChatMode = "health" | "nutrition" | "mental" | "herbi";
+type ChatMode = "health" | "nutrition" | "mental" | "herbi" | "medication";
 
 const CHAT_MODES = {
   health: {
@@ -59,6 +59,17 @@ const CHAT_MODES = {
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
     description: "Ayurvedic wellness guidance",
+  },
+  medication: {
+    name: "Medication Help",
+    shortName: "Meds",
+    icon: Pill,
+    endpoint: "/api/medication",
+    placeholder: "Ask about medications...",
+    greeting: "Medication Info ready. I can help with drug information, side effects, and interactions. How can I assist?",
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    description: "Medication info & safety",
   },
 };
 

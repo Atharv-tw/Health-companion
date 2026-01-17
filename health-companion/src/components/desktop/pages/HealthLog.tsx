@@ -79,8 +79,8 @@ export function DesktopHealthLog() {
   return (
     <div className="max-w-5xl mx-auto space-y-12 pt-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 uppercase">Vitality Synchronization</h1>
-        <p className="text-gray-500 font-light text-lg">Initialize your biometric data stream for clinical analysis.</p>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Vitality Synchronization</h1>
+        <p className="text-gray-500 dark:text-gray-400 font-light text-lg">Initialize your biometric data stream for clinical analysis.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-12">
@@ -91,11 +91,11 @@ export function DesktopHealthLog() {
             const Icon = step.icon;
 
             return (
-              <div 
+              <div
                 key={step.key}
-                className={`flex items-center gap-4 p-4 rounded-3xl transition-all duration-300 ${isActive ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-white/50 text-gray-400'}`}
+                className={`flex items-center gap-4 p-4 rounded-3xl transition-all duration-300 ${isActive ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-white/50 dark:bg-gray-800/50 text-gray-400 dark:text-gray-500'}`}
               >
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isActive ? 'bg-white/20' : 'bg-gray-100'}`}>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isActive ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
                   {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                 </div>
                 <div>
@@ -109,7 +109,7 @@ export function DesktopHealthLog() {
 
         <div className="space-y-8">
           {error && (
-            <div className="p-4 text-[11px] font-bold uppercase tracking-widest text-red-500 bg-red-50 border border-red-200 rounded-3xl">
+            <div className="p-4 text-[11px] font-bold uppercase tracking-widest text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-3xl">
               {error}
             </div>
           )}
@@ -124,10 +124,10 @@ export function DesktopHealthLog() {
             >
               {currentStep === "result" ? (
                 <div className="space-y-8">
-                  <div className="p-8 bg-green-50 border border-green-100 rounded-[3rem] text-center space-y-2">
+                  <div className="p-8 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-[3rem] text-center space-y-2">
                     <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tighter">Synchronization Complete</h3>
-                    <p className="text-gray-500 font-light">Your health log has been verified and sharded.</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tighter">Synchronization Complete</h3>
+                    <p className="text-gray-500 dark:text-gray-400 font-light">Your health log has been verified and sharded.</p>
                   </div>
                   {riskAssessment && <RiskCard assessment={riskAssessment} showDetails={true} />}
                   
@@ -147,13 +147,13 @@ export function DesktopHealthLog() {
               ) : (
                 <CeramicCard tiltEffect={false} className="p-10 space-y-10">
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tighter">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tighter">
                       {currentStep === "symptoms" && "Symptom Acquisition"}
                       {currentStep === "vitals" && "Biometric Measurements"}
                       {currentStep === "lifestyle" && "Environmental Factors"}
                       {currentStep === "review" && "Logic Verification"}
                     </h2>
-                    <p className="text-gray-400 font-light text-sm">
+                    <p className="text-gray-400 dark:text-gray-500 font-light text-sm">
                       {currentStep === "symptoms" && "Select acute or persistent symptoms from the clinical registry."}
                       {currentStep === "vitals" && "Input specific measurements. Standard ranges will be applied during analysis."}
                       {currentStep === "lifestyle" && "Daily habits significantly influence neural risk interpretations."}

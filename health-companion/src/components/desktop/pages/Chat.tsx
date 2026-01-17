@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
-import { Send, Sparkles, ChevronDown, Stethoscope, Apple, Brain, Leaf } from "lucide-react";
+import { Send, Sparkles, ChevronDown, Stethoscope, Apple, Brain, Leaf, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Message {
@@ -13,7 +13,7 @@ interface Message {
   content: string;
 }
 
-type ChatMode = "health" | "nutrition" | "mental" | "herbi";
+type ChatMode = "health" | "nutrition" | "mental" | "herbi" | "medication";
 
 const CHAT_MODES = {
   health: {
@@ -55,6 +55,16 @@ const CHAT_MODES = {
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
     description: "Ayurvedic wellness guidance",
+  },
+  medication: {
+    name: "Medication Help",
+    icon: Pill,
+    endpoint: "/api/medication",
+    placeholder: "Ask about medications, side effects, interactions...",
+    greeting: "### Medication Information Assistant.\nI can help you understand your medications, potential interactions, and general safety information. How can I assist you today?",
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    description: "Medication info & safety",
   },
 };
 
@@ -229,6 +239,7 @@ export function DesktopChat() {
                   {chatMode === "nutrition" ? "Crafting Nutrition Plan..." :
                    chatMode === "mental" ? "Processing Wellness Response..." :
                    chatMode === "herbi" ? "Consulting Ayurvedic Wisdom..." :
+                   chatMode === "medication" ? "Checking Medication Info..." :
                    "Oracle Synthesizing Response..."}
                 </span>
               </motion.div>
@@ -273,6 +284,8 @@ export function DesktopChat() {
                 ? "Mental Wellness • Stress Management • Consult a Professional"
                 : chatMode === "herbi"
                 ? "Herbi Cure • Ayurvedic Wisdom • Consult a Practitioner"
+                : chatMode === "medication"
+                ? "Medication Info • Drug Interactions • Consult a Pharmacist"
                 : "Neural Council Active • HIPAA-Ready Protocol • Data Encrypted"}
             </p>
           </div>
