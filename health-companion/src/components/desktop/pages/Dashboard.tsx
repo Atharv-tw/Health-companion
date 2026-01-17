@@ -200,42 +200,39 @@ export function DesktopDashboard() {
 
       </div>
 
-      {/* Air Quality + Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <AirQualityCard className="md:col-span-1" />
-
-        <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-           <StatsCard
-              label="Total Logs"
-              value={healthData?.summary.totalLogs || 0}
-              icon={FileText}
-              color="text-blue-500"
-              delay={0.2}
-           />
-           <StatsCard
-              label="Avg Heart Rate"
-              value={healthData?.summary.vitals.averages.heartRate || "--"}
-              unit="bpm"
-              icon={Activity}
-              color="text-rose-500"
-              delay={0.3}
-           />
-           <StatsCard
-              label="Avg Sleep"
-              value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"}
-              unit="hrs"
-              icon={Moon}
-              color="text-indigo-500"
-              delay={0.4}
-           />
-           <StatsCard
-              label="Hydration"
-              value="Good"
-              icon={Droplets}
-              color="text-cyan-500"
-              delay={0.5}
-           />
-        </div>
+      {/* Metrics Row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <AirQualityCard />
+        <StatsCard
+          label="Total Logs"
+          value={healthData?.summary.totalLogs || 0}
+          icon={FileText}
+          color="text-blue-500"
+          delay={0.2}
+        />
+        <StatsCard
+          label="Avg Heart Rate"
+          value={healthData?.summary.vitals.averages.heartRate || "--"}
+          unit="bpm"
+          icon={Activity}
+          color="text-rose-500"
+          delay={0.3}
+        />
+        <StatsCard
+          label="Avg Sleep"
+          value={healthData?.summary.lifestyle.averages.avgSleepHours || "--"}
+          unit="hrs"
+          icon={Moon}
+          color="text-indigo-500"
+          delay={0.4}
+        />
+        <StatsCard
+          label="Hydration"
+          value="Good"
+          icon={Droplets}
+          color="text-cyan-500"
+          delay={0.5}
+        />
       </div>
 
     </motion.div>

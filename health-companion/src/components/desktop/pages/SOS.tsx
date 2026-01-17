@@ -39,11 +39,11 @@ export function DesktopSOS() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pt-8">
       <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 shadow-xl mx-auto mb-6">
+        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center text-red-600 dark:text-red-400 shadow-xl mx-auto mb-6">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 uppercase">Guardian SOS</h1>
-        <p className="text-gray-500 font-light text-lg">Instant clinical escalation and emergency response protocols.</p>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Guardian SOS</h1>
+        <p className="text-gray-500 dark:text-gray-400 font-light text-lg">Instant clinical escalation and emergency response protocols.</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -55,14 +55,14 @@ export function DesktopSOS() {
 
         <div className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tighter">Emergency Nodes</h2>
-            <p className="text-sm text-gray-400 font-light">Verified contacts notified during acute escalation.</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tighter">Emergency Nodes</h2>
+            <p className="text-sm text-gray-400 dark:text-gray-500 font-light">Verified contacts notified during acute escalation.</p>
           </div>
-          
+
           <EmergencyContacts contacts={contacts} />
-          
-          <div className="p-6 bg-gray-50 border border-gray-100 rounded-3xl">
-            <p className="text-[10px] text-gray-400 leading-relaxed font-light italic">
+
+          <div className="p-6 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600 rounded-3xl">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-relaxed font-light italic">
               * IN LIFE-THREATENING SCENARIOS, CALL LOCAL EMERGENCY SERVICES IMMEDIATELY. PLATFORM LATENCY MAY OCCUR.
             </p>
           </div>

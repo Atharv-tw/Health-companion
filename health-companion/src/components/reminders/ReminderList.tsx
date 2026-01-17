@@ -131,7 +131,7 @@ export default function ReminderList({ initialReminders }: ReminderListProps) {
           <Plus className="mr-2 h-4 w-4" /> Add New Reminder
         </Button>
       ) : (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30">
           <CardHeader>
             <CardTitle className="text-base">New Reminder</CardTitle>
           </CardHeader>
@@ -184,20 +184,20 @@ export default function ReminderList({ initialReminders }: ReminderListProps) {
       {/* List */}
       <div className="grid gap-4">
         {reminders.length === 0 && !isAdding && (
-             <div className="text-center py-10 text-gray-500">
+             <div className="text-center py-10 text-gray-500 dark:text-gray-400">
                 <p>No reminders set. Add one to stay on track!</p>
               </div>
         )}
         
         {reminders.map((reminder) => (
           <Card key={reminder.id} className={`flex flex-row items-center p-4 transition-opacity ${!reminder.enabled ? 'opacity-60' : ''}`}>
-            <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-4 shrink-0">
+            <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-4 shrink-0">
               {getIcon(reminder.type)}
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{reminder.title}</h4>
-              <div className="flex items-center text-sm text-gray-500 gap-2">
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-2">
                 <Clock className="h-3 w-3" />
                 <span>
                   {(reminder.schedule as any)?.times?.[0]} 
@@ -217,7 +217,7 @@ export default function ReminderList({ initialReminders }: ReminderListProps) {
                  {reminder.enabled ? 'ON' : 'OFF'}
                </Button>
                
-               <Button size="icon" variant="ghost" className="text-gray-400 hover:text-red-500" onClick={() => handleDelete(reminder.id)}>
+               <Button size="icon" variant="ghost" className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" onClick={() => handleDelete(reminder.id)}>
                  <Trash2 className="h-4 w-4" />
                </Button>
             </div>

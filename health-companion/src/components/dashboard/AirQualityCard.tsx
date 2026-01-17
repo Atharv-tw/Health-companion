@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Wind, RefreshCw, MapPin, AlertTriangle } from "lucide-react";
+import { Wind, RefreshCw, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface AirQualityData {
@@ -143,64 +143,34 @@ export function AirQualityCard({ className = "", compact = false }: AirQualityCa
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-6 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-lg ${className}`}
+      className={`p-6 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-sm flex flex-col items-center justify-center text-center hover:scale-[1.02] transition-transform ${className}`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-2xl ${getAQIBgColor(aqi.value)}`}>
-            <Wind className={`w-5 h-5 ${getAQIColor(aqi.value)}`} />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Air Quality Index</h3>
-            <div className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500">
-              <MapPin className="w-3 h-3" />
-              <span>{airData?.location || "Detecting..."}</span>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={fetchAirQuality}
-          disabled={isLoading}
-          className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 text-gray-400 dark:text-gray-500 ${isLoading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
-
-      {/* AQI Display */}
       {error ? (
-        <div className="flex items-center gap-2 text-red-500 text-sm py-4">
-          <AlertTriangle className="w-4 h-4" />
-          {error}
+        <div className="flex flex-col items-center gap-2 text-red-500">
+          <AlertTriangle className="w-5 h-5" />
+          <span className="text-xs">Unavailable</span>
         </div>
       ) : (
         <>
-          <div className="flex items-end gap-3 mb-4">
-            <span className={`text-5xl font-light ${getAQIColor(aqi.value)}`}>
-              {isLoading ? "--" : aqi.value ?? "--"}
-            </span>
-            <span className={`text-sm font-medium pb-2 ${getAQIColor(aqi.value)}`}>
-              {aqi.category}
-            </span>
+          <div className={`p-3 rounded-full bg-white dark:bg-gray-700 shadow-sm ${getAQIColor(aqi.value)} mb-2`}>
+            <Wind className="w-5 h-5" />
           </div>
-
-          {/* AI Insights */}
-          {airData && !isLoading && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">AI Insights</p>
-              <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-4">
-                {airData.data.substring(0, 300)}...
-              </p>
-            </div>
-          )}
-
-          {/* Last Updated */}
-          {lastUpdated && (
-            <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-3 text-center">
-              Updated {lastUpdated.toLocaleTimeString()} • Auto-refreshes every 10 min
-            </p>
-          )}
+          <div className={`text-3xl font-light ${getAQIColor(aqi.value)}`}>
+            {isLoading ? "--" : aqi.value ?? "--"}
+          </div>
+          <div className={`text-xs font-medium ${getAQIColor(aqi.value)} mb-1`}>
+            {aqi.category}
+          </div>
+          <div className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+            Air Quality
+          </div>
+          <button
+            onClick={fetchAirQuality}
+            disabled={isLoading}
+            className="mt-2 text-[9px] text-gray-400 dark:text-gray-500 hover:text-primary flex items-center gap-1"
+          >
+            <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
         </>
       )}
     </motion.div>

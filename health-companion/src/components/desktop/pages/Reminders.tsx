@@ -37,16 +37,16 @@ export function DesktopReminders() {
   return (
     <div className="space-y-12 max-w-4xl mx-auto pt-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 uppercase">Chronos Protocol</h1>
-        <p className="text-gray-500 font-light text-lg">Automated reminders for clinical adherence and health habits.</p>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Chronos Protocol</h1>
+        <p className="text-gray-500 dark:text-gray-400 font-light text-lg">Automated reminders for clinical adherence and health habits.</p>
       </div>
 
-      <div className="bg-white/40 backdrop-blur-xl border border-white/60 p-10 rounded-[3rem] shadow-2xl">
-        <div className="flex items-center gap-3 border-b border-gray-100 pb-6 mb-8">
+      <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/60 dark:border-gray-700/60 p-10 rounded-[3rem] shadow-2xl">
+        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-6 mb-8">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
             <Bell className="w-4 h-4" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tighter">Adherence Schedule</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 uppercase tracking-tighter">Adherence Schedule</h2>
         </div>
         
         <ReminderList initialReminders={reminders} />

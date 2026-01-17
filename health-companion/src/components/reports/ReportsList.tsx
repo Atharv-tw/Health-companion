@@ -81,9 +81,9 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
 
   if (reports.length === 0) {
     return (
-      <Card className="bg-gray-50 border-dashed">
+      <Card className="bg-gray-50 dark:bg-gray-800/50 border-dashed dark:border-gray-700">
         <CardHeader className="text-center">
-          <CardTitle className="text-lg font-medium text-gray-900">
+          <CardTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
             No reports yet
           </CardTitle>
           <CardDescription>
@@ -100,26 +100,26 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
         {reports.map((report) => (
           <Card key={report.id} className="overflow-hidden group">
             <div className="p-4 flex items-start space-x-3">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" />
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate" title={report.fileName}>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" title={report.fileName}>
                   {report.fileName}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {(report.size / 1024 / 1024).toFixed(2)} MB •{" "}
                   {format(new Date(report.createdAt), "MMM d, yyyy")}
                 </p>
               </div>
             </div>
             
-            <div className="bg-gray-50 px-3 py-2 flex items-center justify-between border-t border-gray-100 gap-2">
+            <div className="bg-gray-50 dark:bg-gray-700/50 px-3 py-2 flex items-center justify-between border-t border-gray-100 dark:border-gray-600 gap-2">
               <div className="flex gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-2"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 h-8 px-2"
                   asChild
                 >
                   <a href={report.storageKey} target="_blank" rel="noopener noreferrer">
@@ -131,7 +131,7 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-8 px-2"
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/30 h-8 px-2"
                   onClick={() => setAnalyzingReport(report)}
                 >
                   <Sparkles className="w-4 h-4 mr-1.5" />
@@ -142,7 +142,7 @@ export function ReportsList({ refreshTrigger }: ReportsListProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 h-8 px-2"
                 onClick={() => handleDelete(report.id)}
                 disabled={deletingId === report.id}
               >

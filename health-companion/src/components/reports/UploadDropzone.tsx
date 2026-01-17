@@ -106,8 +106,8 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
       <div
         className={cn(
           "border-2 border-dashed rounded-3xl p-8 text-center transition-all duration-300",
-          isDragActive ? "border-primary bg-primary/5" : "border-gray-100 bg-gray-50/30",
-          error ? "border-red-300 bg-red-50" : ""
+          isDragActive ? "border-primary bg-primary/5" : "border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-700/30",
+          error ? "border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20" : ""
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -127,25 +127,25 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
             htmlFor="file-upload"
             className="flex flex-col items-center justify-center cursor-pointer space-y-4"
           >
-            <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
               <Upload className="w-6 h-6 text-primary" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-bold uppercase tracking-widest text-gray-900">Document Upload</p>
-              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">PDF, PNG, JPG up to 10MB</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-gray-100">Document Upload</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-tighter">PDF, PNG, JPG up to 10MB</p>
             </div>
           </label>
         ) : (
-          <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm animate-in fade-in zoom-in duration-200">
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm animate-in fade-in zoom-in duration-200">
             <div className="flex items-center space-x-4">
               <div className="p-2 bg-primary/5 rounded-xl">
                 <FileText className="w-5 h-5 text-primary" />
               </div>
               <div className="text-left">
-                <p className="text-xs font-bold text-gray-900 truncate max-w-[150px] uppercase">
+                <p className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[150px] uppercase">
                   {file.name}
                 </p>
-                <p className="text-[10px] text-gray-400 font-bold tracking-widest">
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold tracking-widest">
                   {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -153,9 +153,9 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
             {!isUploading && (
               <button
                 onClick={() => setFile(null)}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               </button>
             )}
           </div>
@@ -179,7 +179,7 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
         )}
 
         {file && !isUploading && (
-          <Button onClick={handleUpload} className="mt-6 w-full h-12 rounded-2xl bg-gray-900 text-white font-bold uppercase tracking-widest text-[10px] shadow-xl">
+          <Button onClick={handleUpload} className="mt-6 w-full h-12 rounded-2xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold uppercase tracking-widest text-[10px] shadow-xl">
             Secure Upload
           </Button>
         )}

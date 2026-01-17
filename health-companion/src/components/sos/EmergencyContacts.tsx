@@ -63,7 +63,7 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
       <CardContent className="space-y-4">
         {/* Add Form */}
         {isAdding && (
-          <form onSubmit={handleSubmit} className="p-3 border rounded-lg bg-gray-50 space-y-3">
+          <form onSubmit={handleSubmit} className="p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700/50 space-y-3">
             <div className="space-y-1">
                 <Label className="text-xs">Name</Label>
                 <Input value={name} onChange={e => setName(e.target.value)} required className="h-9" />
@@ -91,17 +91,17 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
 
         {/* List */}
         <div className="space-y-3">
-          {contacts.length === 0 && !isAdding && <p className="text-gray-500 text-sm">No contacts added.</p>}
+          {contacts.length === 0 && !isAdding && <p className="text-gray-500 dark:text-gray-400 text-sm">No contacts added.</p>}
           
           {contacts.map(contact => (
-            <div key={contact.id} className="flex items-start justify-between gap-2 p-3 border rounded-lg bg-white shadow-sm overflow-hidden">
+            <div key={contact.id} className="flex items-start justify-between gap-2 p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
                 <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1 font-medium">
-                        <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <User className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                         <span className="truncate">{contact.name}</span>
-                        {contact.relationship && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">{contact.relationship}</span>}
+                        {contact.relationship && <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full flex-shrink-0">{contact.relationship}</span>}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center gap-1">
                             <Phone className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{contact.phone}</span>
@@ -114,7 +114,7 @@ export default function EmergencyContacts({ contacts }: EmergencyContactsProps) 
                         )}
                     </div>
                 </div>
-                <Button size="icon" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 flex-shrink-0" onClick={() => handleDelete(contact.id)}>
+                <Button size="icon" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 flex-shrink-0" onClick={() => handleDelete(contact.id)}>
                     <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
