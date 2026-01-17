@@ -29,9 +29,10 @@ export function ThinkingOrb({ isThinking }: ThinkingOrbProps) {
 
         {/* The Core Fluid Blob */}
         <motion.div
+          initial={{ borderRadius: "50%" }}
           animate={isThinking ? {
             scale: [1, 1.15, 0.95, 1.1, 1],
-            borderRadius: ["40% 60% 70% 30% / 40% 50% 60% 50%", "60% 40% 30% 70% / 50% 30% 70% 50%", "50% 50% 50% 50% / 50% 50% 50% 50%", "30% 70% 40% 60% / 60% 40% 70% 30%", "40% 60% 70% 30% / 40% 50% 60% 50%"],
+            borderRadius: ["50%", "40% 60% 70% 30% / 40% 50% 60% 50%", "60% 40% 30% 70% / 50% 30% 70% 50%", "30% 70% 40% 60% / 60% 40% 70% 30%", "50%"],
             rotate: [0, 45, 90, 135, 180]
           } : {
             scale: [1, 1.02, 1],
@@ -45,9 +46,11 @@ export function ThinkingOrb({ isThinking }: ThinkingOrbProps) {
           } : {
             duration: 3,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
+            borderRadius: { duration: 0.5 }
           }}
-          className="relative w-24 h-24 bg-gradient-to-tr from-primary/50 via-blue-500/40 to-teal-400/50 dark:from-primary/60 dark:via-blue-400/50 dark:to-teal-300/60 backdrop-blur-xl border-2 border-primary/30 dark:border-primary/50 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] dark:shadow-[0_0_50px_-5px_rgba(59,130,246,0.7)]"
+          style={{ borderRadius: "50%" }}
+          className="relative w-24 h-24 rounded-full bg-gradient-to-tr from-primary/50 via-blue-500/40 to-teal-400/50 dark:from-primary/60 dark:via-blue-400/50 dark:to-teal-300/60 backdrop-blur-xl border-2 border-primary/30 dark:border-primary/50 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] dark:shadow-[0_0_50px_-5px_rgba(59,130,246,0.7)]"
         >
           {/* Inner highlight */}
           <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/40 via-transparent to-transparent dark:from-white/20" />
