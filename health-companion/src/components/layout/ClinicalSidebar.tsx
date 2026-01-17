@@ -9,7 +9,7 @@ import {
   Bell,
   AlertCircle,
   Heart,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,7 +29,7 @@ export function ClinicalSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed top-0 left-0 bottom-0 w-24 z-50 flex flex-col items-center py-10 bg-white/40 backdrop-blur-3xl border-r border-gray-100 shadow-[10px_0_50px_rgba(0,0,0,0.02)]">
+    <div className="fixed top-0 left-0 bottom-0 w-24 z-50 flex flex-col items-center py-10 bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border-r border-gray-100 dark:border-gray-800 shadow-[10px_0_50px_rgba(0,0,0,0.02)] dark:shadow-[10px_0_50px_rgba(0,0,0,0.2)]">
       {/* Branding Logo */}
       <Link href="/" className="mb-12 group">
         <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-all">
@@ -50,11 +50,11 @@ export function ClinicalSidebar() {
                 whileTap={{ scale: 0.95 }}
                 className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300",
-                  isActive 
-                    ? "bg-primary text-white shadow-xl shadow-primary/25" 
-                    : "text-gray-400 hover:text-gray-900 hover:bg-gray-100/50",
-                  item.alert && !isActive && "text-red-400 hover:text-red-600 hover:bg-red-50",
-                  item.primary && !isActive && "text-primary bg-primary/5"
+                  isActive
+                    ? "bg-primary text-white shadow-xl shadow-primary/25"
+                    : "text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                  item.alert && !isActive && "text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30",
+                  item.primary && !isActive && "text-primary bg-primary/5 dark:bg-primary/10"
                 )}
               >
                 <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5px]")} />
@@ -81,9 +81,9 @@ export function ClinicalSidebar() {
       </nav>
 
       {/* Footer Actions */}
-      <button 
+      <button
         onClick={() => signOut({ callbackUrl: "/" })}
-        className="w-12 h-12 rounded-2xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all group relative"
+        className="w-12 h-12 rounded-2xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all group relative"
       >
         <LogOut className="w-5 h-5" />
         <div className="absolute left-16 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
