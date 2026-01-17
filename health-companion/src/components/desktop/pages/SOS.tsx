@@ -47,7 +47,7 @@ export function DesktopSOS() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-12 items-start">
-        <CeramicCard className="p-12 text-center flex flex-col items-center justify-center border-red-50 hover:border-red-100 bg-red-50/10">
+        <CeramicCard tiltEffect={false} className="p-12 text-center flex flex-col items-center justify-center border-red-50 hover:border-red-100 bg-red-50/10">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-400 mb-10">Emergency Trigger</h2>
           <SOSButton initialContacts={contacts} />
           <p className="mt-10 text-xs text-red-400 font-light uppercase tracking-widest">Single-tap activation</p>

@@ -95,8 +95,8 @@ export function CeramicCard({
     >
       <div 
         style={{ 
-          transform: "translateZ(75px)",
-          transformStyle: "preserve-3d"
+          transform: tiltEffect ? "translateZ(75px)" : "none",
+          transformStyle: tiltEffect ? "preserve-3d" : "flat"
         }} 
         className="relative z-10"
       >

@@ -49,7 +49,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-8">
+    <div className="w-full max-w-md space-y-8 relative z-50">
       {/* Branding */}
       <div className="text-center space-y-4">
         <Link href="/" className="inline-flex items-center gap-2 group">
