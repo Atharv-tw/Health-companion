@@ -11,7 +11,7 @@ export default function Page() {
   // Show a clean loading state during detection to prevent flash of wrong UI
   if (isMobile === null) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAF9] dark:bg-gray-900 flex items-center justify-center">
         <motion.div 
           animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}

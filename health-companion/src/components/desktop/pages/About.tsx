@@ -20,29 +20,29 @@ export function DesktopAbout() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/50 backdrop-blur-md border border-white/50 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/50 dark:border-gray-700/50 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-primary shadow-sm mb-8">
                 <Sparkles className="w-3 h-3" />
                 <span>Establishment 2026</span>
               </div>
-              <h1 className="text-6xl md:text-8xl font-bold text-gray-900 tracking-tight leading-[0.85] mb-10 uppercase">
+              <h1 className="text-6xl md:text-8xl font-bold text-gray-900 dark:text-gray-100 tracking-tight leading-[0.85] mb-10 uppercase">
                 The New <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-400 to-teal-400">Vitality.</span>
               </h1>
-              <p className="text-xl text-gray-500 font-light leading-relaxed max-w-lg">
+              <p className="text-xl text-gray-500 dark:text-gray-400 font-light leading-relaxed max-w-lg">
                 We are building the world's most advanced bio-digital bridge. 
                 A platform where every heartbeat is a data point, and every symptom is an insight.
               </p>
             </motion.div>
 
             <div className="relative [perspective:2000px]">
-              <CeramicCard tiltEffect={false} className="aspect-square bg-white/40 flex items-center justify-center border-white/60 shadow-2xl relative overflow-hidden group">
+              <CeramicCard tiltEffect={false} className="aspect-square bg-white/40 dark:bg-gray-800/40 flex items-center justify-center border-white/60 dark:border-gray-700/60 shadow-2xl relative overflow-hidden group">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                   className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent,oklch(0.65_0.18_250/0.1),transparent)] opacity-50"
                 />
                 <div style={{ transform: "translateZ(100px)" }} className="relative text-center">
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-2xl mx-auto mb-6 border border-white/60">
+                  <div className="w-32 h-32 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-2xl mx-auto mb-6 border border-white/60 dark:border-gray-700/60">
                     <Brain className="w-12 h-12 text-primary" />
                   </div>
                   <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Neural Core</span>
@@ -69,8 +69,8 @@ function AboutValueCard({ icon, title, desc, delay }: any) {
         <div className="w-14 h-14 bg-primary/5 text-primary rounded-2xl flex items-center justify-center">
           {icon}
         </div>
-        <h3 className="text-xl font-bold tracking-tight text-gray-900 uppercase">{title}</h3>
-        <p className="text-sm text-gray-500 font-light leading-relaxed">{desc}</p>
+        <h3 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">{title}</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-light leading-relaxed">{desc}</p>
       </div>
     </CeramicCard>
   );

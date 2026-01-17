@@ -4,12 +4,12 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CeramicCard } from "@/components/ui/CeramicCard";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
-import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
 function LoginForm() {
@@ -53,12 +53,12 @@ function LoginForm() {
       {/* Branding */}
       <div className="text-center space-y-4">
         <Link href="/" className="inline-flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-            <Heart className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg group-hover:scale-110 transition-transform">
+            <Image src="/logo.jpeg" alt="Health Companion" width={40} height={40} className="w-full h-full object-cover" />
           </div>
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 uppercase">Authorize Access</h1>
-        <p className="text-gray-500 font-light">Securely enter the Health Companion Oracle.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 uppercase">Authorize Access</h1>
+        <p className="text-gray-500 dark:text-gray-400 font-light">Securely enter the Health Companion Oracle.</p>
       </div>
 
       <CeramicCard className="p-8" tiltEffect={false}>
@@ -67,19 +67,19 @@ function LoginForm() {
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="p-3 text-[11px] font-bold uppercase tracking-widest text-red-500 bg-red-50 border border-red-100 rounded-xl"
+              className="p-3 text-[11px] font-bold uppercase tracking-widest text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-xl"
             >
               {error}
             </motion.div>
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Identity (Email)</Label>
+            <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 ml-1">Identity (Email)</Label>
             <Input
               id="email"
               type="email"
               placeholder="name@nexus.com"
-              className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all"
+              className="h-12 rounded-2xl bg-gray-50/50 dark:bg-gray-700/50 border-gray-100 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-700 transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -88,12 +88,12 @@ function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" title="Enter Password" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Key (Password)</Label>
+            <Label htmlFor="password" title="Enter Password" className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 ml-1">Key (Password)</Label>
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
-              className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all"
+              className="h-12 rounded-2xl bg-gray-50/50 dark:bg-gray-700/50 border-gray-100 dark:border-gray-600 focus:bg-white dark:focus:bg-gray-700 transition-all"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -101,13 +101,13 @@ function LoginForm() {
             />
           </div>
 
-          <Button type="submit" className="w-full h-12 rounded-2xl bg-gray-900 text-white hover:bg-black font-bold uppercase tracking-widest text-[11px] shadow-xl transition-all active:scale-95" disabled={isLoading}>
+          <Button type="submit" className="w-full h-12 rounded-2xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-black dark:hover:bg-white font-bold uppercase tracking-widest text-[11px] shadow-xl transition-all active:scale-95" disabled={isLoading}>
             {isLoading ? "Authenticating..." : "Establish Session"}
           </Button>
         </form>
       </CeramicCard>
 
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         New to the Vanguard?{" "}
         <Link href="/signup" className="text-primary font-bold hover:underline">
           Join Now

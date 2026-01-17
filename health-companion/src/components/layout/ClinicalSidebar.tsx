@@ -8,10 +8,10 @@ import {
   FileText,
   Bell,
   AlertCircle,
-  Heart,
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { signOut } from "next-auth/react";
@@ -32,8 +32,8 @@ export function ClinicalSidebar() {
     <div className="fixed top-0 left-0 bottom-0 w-24 z-50 flex flex-col items-center py-10 bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border-r border-gray-100 dark:border-gray-800 shadow-[10px_0_50px_rgba(0,0,0,0.02)] dark:shadow-[10px_0_50px_rgba(0,0,0,0.2)]">
       {/* Branding Logo */}
       <Link href="/" className="mb-12 group">
-        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-all">
-          <Heart className="w-6 h-6 text-white" />
+        <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-primary/20 group-hover:scale-110 transition-all">
+          <Image src="/logo.jpeg" alt="Health Companion" width={48} height={48} className="w-full h-full object-cover" />
         </div>
       </Link>
 
