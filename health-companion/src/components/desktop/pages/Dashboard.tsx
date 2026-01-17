@@ -108,12 +108,22 @@ export function DesktopDashboard() {
     >
       {/* Header Section */}
       <motion.div variants={item} className="text-center space-y-2 py-6">
-        <h1 className="text-4xl font-light tracking-tight text-gray-900">
+        <h1 className="text-4xl font-light tracking-tight text-gray-900 dark:text-gray-100">
           Hello, <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 font-medium">
             {session?.user?.name || "Friend"}
           </span>
         </h1>
-        <p className="text-gray-500 font-light text-lg">Your vital signs are looking stable today.</p>
+        <p className="text-gray-500 dark:text-gray-400 font-light text-lg">Your vital signs are looking stable today.</p>
+      </motion.div>
+
+      {/* Quick Actions - Top Left */}
+      <motion.div
+        variants={item}
+        className="flex justify-start gap-4"
+      >
+        <QuickAction href="/chat" icon={MessageCircle} label="AI Chat" />
+        <QuickAction href="/reports" icon={FileText} label="Reports" />
+        <QuickAction href="/sos" icon={AlertCircle} label="SOS" alert />
       </motion.div>
 
       {/* Hero Grid */}
@@ -228,16 +238,6 @@ export function DesktopDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions (Floating Pill Style) */}
-      <motion.div 
-        variants={item}
-        className="flex justify-center gap-4 py-8"
-      >
-         <QuickAction href="/chat" icon={MessageCircle} label="AI Chat" />
-         <QuickAction href="/reports" icon={FileText} label="Reports" />
-         <QuickAction href="/sos" icon={AlertCircle} label="SOS" alert />
-      </motion.div>
-
     </motion.div>
   );
 }
@@ -259,16 +259,16 @@ function StatsCard({ label, value, unit, icon: Icon, color, delay }: any) {
 function QuickAction({ href, icon: Icon, label, alert }: any) {
   return (
     <Link href={href}>
-      <motion.div 
+      <motion.div
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.95 }}
         className={`flex flex-col items-center gap-2 group cursor-pointer`}
       >
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-colors ${alert ? 'bg-red-50 text-red-500 group-hover:bg-red-100' : 'bg-white text-gray-500 group-hover:bg-gray-50'}`}>
-           <Icon className="w-6 h-6" />
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-colors ${alert ? 'bg-red-50 dark:bg-red-950/50 text-red-500 group-hover:bg-red-100 dark:group-hover:bg-red-900/50' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:bg-gray-50 dark:group-hover:bg-gray-700'}`}>
+          <Icon className="w-6 h-6" />
         </div>
-        <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900 transition-colors">{label}</span>
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{label}</span>
       </motion.div>
     </Link>
-  )
+  );
 }
