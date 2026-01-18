@@ -75,6 +75,41 @@ const CHAT_MODES = {
   },
 };
 
+// Helper functions for localStorage persistence
+const getStorageKey = (mode: ChatMode) => `chat_${mode}`;
+const getSessionKey = (mode: ChatMode) => `chat_session_${mode}`;
+
+const loadChatFromStorage = (mode: ChatMode): { messages: Message[]; sessionId: string | null } => {
+  if (typeof window === "undefined") {
+    return { messages: [{ role: "assistant", content: CHAT_MODES[mode].greeting }], sessionId: null };
+  }
+  try {
+    const storedMessages = localStorage.getItem(getStorageKey(mode));
+    const storedSessionId = localStorage.getItem(getSessionKey(mode));
+    if (storedMessages) {
+      const parsed = JSON.parse(storedMessages);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return { messages: parsed, sessionId: storedSessionId };
+      }
+    }
+  } catch (e) {
+    console.error("Error loading chat from storage:", e);
+  }
+  return { messages: [{ role: "assistant", content: CHAT_MODES[mode].greeting }], sessionId: null };
+};
+
+const saveChatToStorage = (mode: ChatMode, messages: Message[], sessionId: string | null) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(getStorageKey(mode), JSON.stringify(messages));
+    if (sessionId) {
+      localStorage.setItem(getSessionKey(mode), sessionId);
+    }
+  } catch (e) {
+    console.error("Error saving chat to storage:", e);
+  }
+};
+
 export function MobileChat() {
   const router = useRouter();
   const [chatMode, setChatMode] = useState<ChatMode>("health");
@@ -85,10 +120,26 @@ export function MobileChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const currentMode = CHAT_MODES[chatMode];
   const ModeIcon = currentMode.icon;
+
+  // Load chat from localStorage on mount and mode change
+  useEffect(() => {
+    const { messages: storedMessages, sessionId: storedSessionId } = loadChatFromStorage(chatMode);
+    setMessages(storedMessages);
+    setSessionId(storedSessionId);
+    setIsInitialized(true);
+  }, [chatMode]);
+
+  // Save chat to localStorage when messages change
+  useEffect(() => {
+    if (isInitialized && messages.length > 0) {
+      saveChatToStorage(chatMode, messages, sessionId);
+    }
+  }, [messages, sessionId, chatMode, isInitialized]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -99,8 +150,7 @@ export function MobileChat() {
   const handleModeSwitch = (mode: ChatMode) => {
     if (mode !== chatMode) {
       setChatMode(mode);
-      setSessionId(null);
-      setMessages([{ role: "assistant", content: CHAT_MODES[mode].greeting }]);
+      // Chat will be loaded from storage by the useEffect
     }
     setShowModeMenu(false);
   };
