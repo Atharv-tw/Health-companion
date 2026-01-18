@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 10,
       include: {
-        riskAlert: true,
+        RiskAlert: true,
       },
     });
 
@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
       healthData = healthLogs.map((log, index) => {
         const symptoms = log.symptoms as { name: string; severity: string }[] | null;
         const lifestyle = log.lifestyle as { sleep?: number; water?: number; exercise?: number; stress?: string } | null;
-        const risk = log.riskAlert;
+        const risk = log.RiskAlert;
 
         let entry = `Entry ${index + 1} (${log.createdAt.toLocaleDateString()}):\n`;
 

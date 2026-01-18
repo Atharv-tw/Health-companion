@@ -42,13 +42,13 @@ export async function GET(request: NextRequest) {
     // We join with HealthLog to ensure we get the latest one created
     const latestRisk = await prisma.riskAlert.findFirst({
       where: {
-        healthLog: {
+        HealthLog: {
           userId: userId
         }
       },
       orderBy: { createdAt: "desc" },
       include: {
-        healthLog: {
+        HealthLog: {
           select: {
             createdAt: true,
             symptoms: true
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       redFlags: latestRisk.redFlags,
       nextSteps: latestRisk.nextSteps,
       basedOn: {
-        symptoms: latestRisk.healthLog.symptoms
+        symptoms: latestRisk.HealthLog.symptoms
       }
     }, { headers: corsHeaders });
 

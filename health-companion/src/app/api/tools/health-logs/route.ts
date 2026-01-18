@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: limit,
       include: {
-        riskAlert: {
+        RiskAlert: {
           select: {
             riskLevel: true,
             reasons: true,
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         date: log.createdAt.toISOString().split('T')[0],
         symptoms: symptomList,
         vitals: vitalsList,
-        riskLevel: log.riskAlert?.riskLevel || "UNKNOWN",
+        riskLevel: log.RiskAlert?.riskLevel || "UNKNOWN",
         raw: log
       };
     });

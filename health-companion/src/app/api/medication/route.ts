@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         where: { userId: session.user.id },
         orderBy: { createdAt: "desc" },
         take: 5,
-        include: { riskAlert: true },
+        include: { RiskAlert: true },
       }),
       prisma.report.findMany({
         where: { userId: session.user.id },

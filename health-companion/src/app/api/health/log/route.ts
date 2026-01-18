@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       take: limit,
       skip: offset,
       include: {
-        riskAlert: true,
+        RiskAlert: true,
       },
     });
 

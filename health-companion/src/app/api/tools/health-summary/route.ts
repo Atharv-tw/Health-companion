@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
       include: {
-        riskAlert: true,
+        RiskAlert: true,
       },
     });
 
@@ -164,8 +164,8 @@ export async function GET(request: NextRequest) {
 
     // 8. Get risk levels distribution
     const riskLevels = healthLogs
-      .filter((log) => log.riskAlert)
-      .map((log) => log.riskAlert!.riskLevel);
+      .filter((log) => log.RiskAlert)
+      .map((log) => log.RiskAlert!.riskLevel);
 
     const latestRiskLevel = riskLevels[0] || "NONE";
 

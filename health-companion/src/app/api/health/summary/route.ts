@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       },
       orderBy: { createdAt: "desc" },
       include: {
-        riskAlert: true,
+        RiskAlert: true,
       },
     });
 
@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
     };
 
     // Get latest risk level
-    const latestWithRisk = healthLogs.find((log) => log.riskAlert);
-    const latestRiskLevel = latestWithRisk?.riskAlert?.riskLevel || null;
+    const latestWithRisk = healthLogs.find((log) => log.RiskAlert);
+    const latestRiskLevel = latestWithRisk?.RiskAlert?.riskLevel || null;
 
     // Daily trends for charts
     const dailyTrends = healthLogs.reduce((acc, log) => {

@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     // Get recent conversation history for continuity
     const recentMessages = await prisma.chatMessage.findMany({
       where: {
-        session: { userId: session.user.id },
+        ChatSession: { userId: session.user.id },
       },
       orderBy: { createdAt: "desc" },
       take: 6, // Last 3 exchanges (user + assistant)
@@ -329,7 +329,7 @@ export async function GET(request: NextRequest) {
       const chatSession = await prisma.chatSession.findFirst({
         where: { id: sessionId, userId: session.user.id },
         include: {
-          messages: {
+          ChatMessage: {
             orderBy: { createdAt: "asc" },
           },
         },
@@ -347,7 +347,7 @@ export async function GET(request: NextRequest) {
       where: { userId: session.user.id },
       orderBy: { updatedAt: "desc" },
       include: {
-        messages: {
+        ChatMessage: {
           take: 1,
           orderBy: { createdAt: "desc" },
         },
