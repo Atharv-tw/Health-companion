@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { checkSafety, getFallbackResponse, validateAIResponse } from "@/lib/safety-gate";
 import { getEmergencyResponse } from "@/lib/emergency-templates";
 import { chat, formatResponseWithCitations } from "@/lib/ondemand";
+import { EmergencyContext } from "@/types/emergency";
 import { z } from "zod";
 
 const chatRequestSchema = z.object({
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
         sessionId: chatSession.id,
         safetyResult: "EMERGENCY_ESCALATE",
         shouldTriggerSOS: safetyCheck.shouldTriggerSOS,
+        emergencyContext: safetyCheck.emergencyContext,
       });
     }
 

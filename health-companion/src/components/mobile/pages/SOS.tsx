@@ -3,11 +3,27 @@
 import { useEffect, useState } from "react";
 import SOSButton from "@/components/sos/SOSButton";
 import EmergencyContacts from "@/components/sos/EmergencyContacts";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { EmergencyContext } from "@/types/emergency";
 
-export function MobileSOS() {
+interface MobileSOSProps {
+  autoActivate?: boolean;
+  emergencyContext?: EmergencyContext | null;
+}
+
+// Map emergency types to display labels
+const EMERGENCY_TYPE_LABELS: Record<string, string> = {
+  CARDIAC: "Cardiac Emergency",
+  STROKE: "Stroke Emergency",
+  BREATHING: "Breathing Emergency",
+  ALLERGIC: "Allergic Reaction",
+  MENTAL_HEALTH: "Mental Health Crisis",
+  GENERAL: "Medical Emergency",
+};
+
+export function MobileSOS({ autoActivate = false, emergencyContext = null }: MobileSOSProps) {
   const [contacts, setContacts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -50,6 +66,23 @@ export function MobileSOS() {
       </div>
 
       <main className="flex-1 pt-20 px-4 space-y-8 flex flex-col items-center overflow-x-hidden">
+        {/* Emergency Banner - shown when auto-activated from chat */}
+        {emergencyContext && (
+          <div className="w-full bg-red-600 text-white p-4 rounded-2xl shadow-xl animate-pulse">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-8 h-8 flex-shrink-0" />
+              <div>
+                <h2 className="text-lg font-black uppercase">
+                  {EMERGENCY_TYPE_LABELS[emergencyContext.type] || "Emergency"}
+                </h2>
+                <p className="text-red-100 text-sm">
+                  {emergencyContext.detectedKeywords.slice(0, 2).join(", ")}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold tracking-tighter text-gray-900 leading-tight uppercase">
             Acute <span className="text-red-600">Distress</span>
@@ -57,7 +90,7 @@ export function MobileSOS() {
         </div>
 
         <div className="w-full max-w-[280px] py-4">
-          <SOSButton initialContacts={contacts} />
+          <SOSButton initialContacts={contacts} autoActivate={autoActivate} />
         </div>
 
         <div className="w-full space-y-4">

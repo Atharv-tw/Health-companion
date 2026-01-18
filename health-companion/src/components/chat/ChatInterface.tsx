@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChatMessage } from "./ChatMessage";
 import Link from "next/link";
+import { EmergencyContext } from "@/types/emergency";
 
 interface Message {
   id: string;
@@ -21,6 +23,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ initialMessages = [], sessionId: initialSessionId }: ChatInterfaceProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -93,8 +96,15 @@ export function ChatInterface({ initialMessages = [], sessionId: initialSessionI
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Show SOS prompt for emergencies
-      if (data.shouldTriggerSOS) {
+      // Auto-redirect for emergencies (non-dismissible)
+      if (data.shouldTriggerSOS && data.emergencyContext) {
+        // Save emergency context to sessionStorage for SOS page
+        sessionStorage.setItem('emergencyContext', JSON.stringify(data.emergencyContext as EmergencyContext));
+        // Immediate redirect to SOS page
+        router.push('/sos?emergency=true');
+        return;
+      } else if (data.shouldTriggerSOS) {
+        // Fallback: show SOS prompt if no context
         setShowSOSPrompt(true);
       }
     } catch {

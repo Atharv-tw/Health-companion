@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerBackground } from "@/components/ui/ShimmerBackground";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
 import { Send, Sparkles, ChevronDown, Stethoscope, Apple, Brain, Leaf, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmergencyContext } from "@/types/emergency";
 
 interface Message {
   role: "user" | "assistant";
@@ -69,6 +71,7 @@ const CHAT_MODES = {
 };
 
 export function DesktopChat() {
+  const router = useRouter();
   const [chatMode, setChatMode] = useState<ChatMode>("health");
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -127,6 +130,13 @@ export function DesktopChat() {
       const data = await response.json();
       if (data.sessionId) setSessionId(data.sessionId);
       setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+
+      // Auto-redirect for emergencies
+      if (data.shouldTriggerSOS && data.emergencyContext) {
+        sessionStorage.setItem('emergencyContext', JSON.stringify(data.emergencyContext as EmergencyContext));
+        router.push('/sos?emergency=true');
+        return;
+      }
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "CRITICAL_ERROR: Synchronization interrupted." }]);
     } finally {

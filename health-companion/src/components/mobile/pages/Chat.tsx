@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ThinkingOrb } from "@/components/chat/ThinkingOrb";
 import { DataStreamMessage } from "@/components/chat/DataStreamMessage";
 import { Send, ChevronLeft, ChevronDown, Stethoscope, Apple, Brain, Leaf, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { EmergencyContext } from "@/types/emergency";
 
 interface Message {
   role: "user" | "assistant";
@@ -74,6 +76,7 @@ const CHAT_MODES = {
 };
 
 export function MobileChat() {
+  const router = useRouter();
   const [chatMode, setChatMode] = useState<ChatMode>("health");
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -120,6 +123,13 @@ export function MobileChat() {
       const data = await response.json();
       if (data.sessionId) setSessionId(data.sessionId);
       setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+
+      // Auto-redirect for emergencies
+      if (data.shouldTriggerSOS && data.emergencyContext) {
+        sessionStorage.setItem('emergencyContext', JSON.stringify(data.emergencyContext as EmergencyContext));
+        router.push('/sos?emergency=true');
+        return;
+      }
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Sync error." }]);
     } finally {

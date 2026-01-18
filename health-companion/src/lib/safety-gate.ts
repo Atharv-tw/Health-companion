@@ -9,6 +9,13 @@
  * Returns: ALLOW | EMERGENCY_ESCALATE | BLOCK_UNSAFE
  */
 
+import {
+  EmergencyType,
+  EmergencyContext,
+  EmergencySeverity,
+  EMERGENCY_TYPE_KEYWORDS,
+} from "@/types/emergency";
+
 export type SafetyResult = "ALLOW" | "EMERGENCY_ESCALATE" | "BLOCK_UNSAFE";
 
 export interface SafetyCheckResult {
@@ -16,6 +23,7 @@ export interface SafetyCheckResult {
   reason?: string;
   suggestedResponse?: string;
   shouldTriggerSOS?: boolean;
+  emergencyContext?: EmergencyContext;
 }
 
 // Emergency keywords that require immediate escalation
@@ -92,6 +100,89 @@ const HARMFUL_PATTERNS = [
   /painless\s*death/i,
 ];
 
+// Map patterns to their emergency types for context building
+const EMERGENCY_PATTERN_TYPES: Array<{ pattern: RegExp; type: EmergencyType; severity: EmergencySeverity; keyword: string }> = [
+  // Cardiac - CRITICAL
+  { pattern: /chest\s*pain.*breath|breath.*chest\s*pain/i, type: 'CARDIAC', severity: 'CRITICAL', keyword: 'chest pain with breathing difficulty' },
+  { pattern: /heart\s*attack/i, type: 'CARDIAC', severity: 'CRITICAL', keyword: 'heart attack' },
+  { pattern: /severe\s*chest\s*pain/i, type: 'CARDIAC', severity: 'CRITICAL', keyword: 'severe chest pain' },
+
+  // Breathing - CRITICAL
+  { pattern: /can'?t\s*breathe/i, type: 'BREATHING', severity: 'CRITICAL', keyword: 'cannot breathe' },
+  { pattern: /difficulty\s*breathing/i, type: 'BREATHING', severity: 'CRITICAL', keyword: 'difficulty breathing' },
+
+  // Stroke - CRITICAL
+  { pattern: /stroke/i, type: 'STROKE', severity: 'CRITICAL', keyword: 'stroke' },
+  { pattern: /face\s*drooping/i, type: 'STROKE', severity: 'CRITICAL', keyword: 'face drooping' },
+  { pattern: /arm\s*weakness/i, type: 'STROKE', severity: 'URGENT', keyword: 'arm weakness' },
+  { pattern: /speech\s*difficulty/i, type: 'STROKE', severity: 'CRITICAL', keyword: 'speech difficulty' },
+  { pattern: /sudden\s*numbness/i, type: 'STROKE', severity: 'CRITICAL', keyword: 'sudden numbness' },
+  { pattern: /sudden\s*confusion/i, type: 'STROKE', severity: 'CRITICAL', keyword: 'sudden confusion' },
+
+  // Allergic - CRITICAL
+  { pattern: /anaphyla/i, type: 'ALLERGIC', severity: 'CRITICAL', keyword: 'anaphylaxis' },
+  { pattern: /throat\s*closing/i, type: 'ALLERGIC', severity: 'CRITICAL', keyword: 'throat closing' },
+  { pattern: /throat\s*swelling/i, type: 'ALLERGIC', severity: 'CRITICAL', keyword: 'throat swelling' },
+  { pattern: /can'?t\s*swallow/i, type: 'ALLERGIC', severity: 'CRITICAL', keyword: 'cannot swallow' },
+
+  // Mental Health - CRITICAL
+  { pattern: /suicid/i, type: 'MENTAL_HEALTH', severity: 'CRITICAL', keyword: 'suicidal thoughts' },
+  { pattern: /kill\s*(my)?self/i, type: 'MENTAL_HEALTH', severity: 'CRITICAL', keyword: 'self-harm intent' },
+  { pattern: /want\s*to\s*die/i, type: 'MENTAL_HEALTH', severity: 'CRITICAL', keyword: 'want to die' },
+  { pattern: /end\s*my\s*life/i, type: 'MENTAL_HEALTH', severity: 'CRITICAL', keyword: 'end my life' },
+
+  // General - CRITICAL/URGENT
+  { pattern: /overdos/i, type: 'GENERAL', severity: 'CRITICAL', keyword: 'overdose' },
+  { pattern: /poison/i, type: 'GENERAL', severity: 'CRITICAL', keyword: 'poisoning' },
+  { pattern: /severe\s*bleeding/i, type: 'GENERAL', severity: 'CRITICAL', keyword: 'severe bleeding' },
+  { pattern: /unconscious/i, type: 'GENERAL', severity: 'CRITICAL', keyword: 'unconscious' },
+  { pattern: /seizure/i, type: 'GENERAL', severity: 'CRITICAL', keyword: 'seizure' },
+  { pattern: /convulsion/i, type: 'GENERAL', severity: 'CRITICAL', keyword: 'convulsion' },
+  { pattern: /worst\s*pain.*life/i, type: 'GENERAL', severity: 'URGENT', keyword: 'worst pain of life' },
+  { pattern: /excruciating/i, type: 'GENERAL', severity: 'URGENT', keyword: 'excruciating pain' },
+];
+
+/**
+ * Detect emergency type and build context from message
+ */
+function detectEmergencyContext(message: string): EmergencyContext | null {
+  const detectedKeywords: string[] = [];
+  let detectedType: EmergencyType = 'GENERAL';
+  let severity: EmergencySeverity = 'URGENT';
+
+  // Check all patterns and collect matches
+  for (const { pattern, type, severity: patternSeverity, keyword } of EMERGENCY_PATTERN_TYPES) {
+    if (pattern.test(message)) {
+      detectedKeywords.push(keyword);
+      // Use the most specific type found (prioritize non-GENERAL)
+      if (detectedType === 'GENERAL' || type !== 'GENERAL') {
+        detectedType = type;
+      }
+      // Upgrade to CRITICAL if any pattern is CRITICAL
+      if (patternSeverity === 'CRITICAL') {
+        severity = 'CRITICAL';
+      }
+    }
+  }
+
+  if (detectedKeywords.length === 0) {
+    // Check original EMERGENCY_PATTERNS as fallback
+    if (!EMERGENCY_PATTERNS.some(pattern => pattern.test(message))) {
+      return null;
+    }
+    // Generic emergency
+    detectedKeywords.push('emergency detected');
+  }
+
+  return {
+    type: detectedType,
+    detectedKeywords,
+    severity,
+    timestamp: new Date().toISOString(),
+    originalMessage: message.substring(0, 200), // Limit for privacy
+  };
+}
+
 /**
  * Check if the user message requires emergency escalation
  */
@@ -137,10 +228,12 @@ export function checkSafety(userMessage: string): SafetyCheckResult {
 
   // Priority 1: Check for emergencies - escalate immediately
   if (checkForEmergency(message)) {
+    const emergencyContext = detectEmergencyContext(message);
     return {
       result: "EMERGENCY_ESCALATE",
       reason: "Emergency keywords detected",
       shouldTriggerSOS: true,
+      emergencyContext: emergencyContext || undefined,
       suggestedResponse: `🚨 **This sounds like a medical emergency.**
 
 **If you or someone else is in immediate danger, please:**
@@ -161,10 +254,18 @@ Your safety is the top priority. Professional medical help is essential in emerg
 
   // Priority 2: Check for harmful content
   if (checkForHarmfulContent(message)) {
+    const emergencyContext: EmergencyContext = {
+      type: 'MENTAL_HEALTH',
+      detectedKeywords: ['harmful content detected'],
+      severity: 'CRITICAL',
+      timestamp: new Date().toISOString(),
+      originalMessage: message.substring(0, 200),
+    };
     return {
       result: "EMERGENCY_ESCALATE",
       reason: "Harmful content detected",
       shouldTriggerSOS: true,
+      emergencyContext,
       suggestedResponse: `I'm concerned about what you've shared. Your life matters, and help is available.
 
 **Please reach out now:**

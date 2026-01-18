@@ -1,23 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EmergencyContact } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Phone, X, ShieldAlert } from 'lucide-react';
 
 interface SOSButtonProps {
   initialContacts: EmergencyContact[];
+  autoActivate?: boolean;
 }
 
-export default function SOSButton({ initialContacts }: SOSButtonProps) {
+export default function SOSButton({ initialContacts, autoActivate = false }: SOSButtonProps) {
   const [status, setStatus] = useState<'IDLE' | 'CONFIRM' | 'ACTIVE'>('IDLE');
-  
+
+  // Auto-activate on emergency redirect
+  useEffect(() => {
+    if (autoActivate && status === 'IDLE') {
+      handleTrigger();
+    }
+  }, [autoActivate]);
+
   const handleTrigger = async () => {
     // Optionally call API to log the event
     try {
         await fetch('/api/sos/trigger', { method: 'POST' });
     } catch (e) { console.error(e); }
-    
+
     setStatus('ACTIVE');
   };
 

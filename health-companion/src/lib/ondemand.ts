@@ -3,7 +3,10 @@
  *
  * Uses Chat API with GPT-4o model + REST API agents for data retrieval.
  * Our backend provides tool endpoints that OnDemand agents call.
+ * Integrates local RAG for grounded responses with citations.
  */
+
+import { searchKnowledge, Citation } from "./knowledge-rag";
 
 const ONDEMAND_CHAT_API = "https://api.on-demand.io/chat/v1";
 const ONDEMAND_MEDIA_API = "https://api.on-demand.io/media/v1";
@@ -40,11 +43,7 @@ interface OnDemandConfig {
 interface OnDemandResponse {
   answer: string;
   sessionId?: string;
-  citations?: Array<{
-    source: string;
-    title?: string;
-    snippet?: string;
-  }>;
+  citations?: Citation[];
 }
 
 function getConfig(): OnDemandConfig {
@@ -140,7 +139,7 @@ async function submitQuery(
   query: string,
   agentIds: string[] = [],
   responseMode: "sync" | "stream" = "sync",
-  context?: { healthSummary?: string; recentSymptoms?: string[]; userName?: string }
+  context?: { healthSummary?: string; recentSymptoms?: string[]; userName?: string; ragContext?: string }
 ): Promise<OnDemandResponse> {
   const config = getConfig();
 
@@ -156,6 +155,9 @@ async function submitQuery(
   const userName = context?.userName ? context.userName : "there";
   const userContextBlock = context?.healthSummary
     ? `\n\nUSER HEALTH CONTEXT:\n${context.healthSummary}`
+    : "";
+  const ragContextBlock = context?.ragContext
+    ? `\n\n${context.ragContext}\n\nIMPORTANT: When answering, reference the relevant medical knowledge above and cite the sources.`
     : "";
 
   const fulfillmentPrompt = `You are a compassionate and knowledgeable Health Companion AI assistant named "HealthBuddy". You help users understand their health, track wellness patterns, and make informed decisions about their wellbeing.
@@ -203,7 +205,7 @@ RESPONSE GUIDELINES:
 - Always include "Please consult a healthcare professional" for medical concerns
 - If user shares symptoms, ask clarifying questions about duration, severity, and associated factors
 
-The user's name is ${userName}.${userContextBlock}`;
+The user's name is ${userName}.${userContextBlock}${ragContextBlock}`;
 
   const requestBody: Record<string, unknown> = {
     query: query,
@@ -262,6 +264,7 @@ The user's name is ${userName}.${userContextBlock}`;
 
 /**
  * Main chat function - uses GPT-4.1 with relevant agents based on query
+ * Now integrates RAG for grounded responses with citations
  */
 export async function chat(
   existingSessionId: string | null,
@@ -275,6 +278,21 @@ export async function chat(
     ? customAgentIds
     : getRelevantPlugins(message);
   console.log(`Selected agents: ${agentIds.length > 0 ? agentIds.join(", ") : "none (using model only)"}`);
+
+  // Search knowledge base for relevant context (RAG)
+  let ragContext = "";
+  let ragCitations: Citation[] = [];
+  try {
+    const ragResult = await searchKnowledge(message, 3);
+    if (ragResult.context) {
+      ragContext = ragResult.context;
+      ragCitations = ragResult.citations;
+      console.log(`RAG found ${ragCitations.length} relevant documents`);
+    }
+  } catch (error) {
+    console.error("RAG search error:", error);
+    // Continue without RAG context
+  }
 
   // Build context metadata for session
   const contextMetadata: ContextMetadata[] = [];
@@ -292,11 +310,23 @@ export async function chat(
   const externalUserId = userId || `user-${Date.now()}`;
   const sessionId = existingSessionId || (await createSession(externalUserId, contextMetadata));
 
+  // Merge RAG context with user context
+  const enrichedContext = {
+    ...context,
+    ragContext,
+  };
+
   // Submit query with selected agents and context
-  const response = await submitQuery(sessionId, message, agentIds, "sync", context);
+  const response = await submitQuery(sessionId, message, agentIds, "sync", enrichedContext);
+
+  // Merge RAG citations with any API citations
+  const allCitations = [...ragCitations, ...(response.citations || [])];
 
   return {
-    response,
+    response: {
+      ...response,
+      citations: allCitations.length > 0 ? allCitations : undefined,
+    },
     sessionId,
   };
 }
