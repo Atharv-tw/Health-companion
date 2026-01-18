@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { riskAlert: true },
+      include: { RiskAlert: true },
     });
 
     // Get recent conversation history for continuity
@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Risk alert
-        if (log.riskAlert) {
-          parts.push(`Risk: ${log.riskAlert.riskLevel}`);
+        if (log.RiskAlert) {
+          parts.push(`Risk: ${log.RiskAlert.riskLevel}`);
         }
 
         return parts.join(" | ");
