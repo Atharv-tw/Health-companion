@@ -33,8 +33,7 @@ export async function GET(_req: Request) {
     });
 
     return NextResponse.json(reminders);
-  } catch (error) {
-    console.error('Failed to fetch reminders:', error);
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -48,7 +47,6 @@ export async function POST(req: Request) {
 
   try {
     const json = await req.json();
-    console.log('Incoming Reminder Body:', JSON.stringify(json, null, 2));
     const body = createReminderSchema.parse(json);
 
     const reminder = await prisma.reminder.create({
@@ -64,10 +62,8 @@ export async function POST(req: Request) {
     return NextResponse.json(reminder, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('Validation Error Details:', JSON.stringify(error.issues, null, 2));
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }
-    console.error('Failed to create reminder:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

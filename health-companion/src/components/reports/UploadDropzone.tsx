@@ -87,8 +87,7 @@ export function UploadDropzone({ onUploadComplete }: UploadDropzoneProps) {
         throw new Error(errorData.error || "Failed to upload report");
       }
 
-      const result = await response.json();
-      console.log("Upload result:", result);
+      await response.json();
 
       setProgress(100);
       setFile(null);

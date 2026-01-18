@@ -31,13 +31,10 @@ export async function DELETE(
         try {
             if (report.storageKey.startsWith('http')) {
                 await del(report.storageKey);
-            } else {
-                // Potential OnDemand Document Deletion Logic
-                // await deleteFromKnowledgeBase(report.storageKey);
-                console.log("OnDemand Document ID found, skipping Vercel Blob deletion:", report.storageKey);
             }
-        } catch (e) {
-            console.error("Failed to delete storage asset", e);
+            // For OnDemand document IDs, skip Vercel Blob deletion
+        } catch {
+            // Continue even if storage deletion fails
         }
     }
 

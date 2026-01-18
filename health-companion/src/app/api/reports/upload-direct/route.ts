@@ -36,14 +36,11 @@ export async function POST(request: NextRequest) {
     const isPDF = file.type === "application/pdf";
     const processingPlugin = isImage ? MEDIA_PLUGINS.IMAGE : MEDIA_PLUGINS.DOCUMENT;
 
-    console.log(`Processing ${file.name} with plugin: ${processingPlugin} (${isImage ? "image" : "document"})`);
-
     // Step 1: Upload to Vercel Blob first to get a public URL
     const blob = await put(file.name, file, {
       access: "public",
       addRandomSuffix: true,
     });
-    console.log(`File uploaded to Vercel Blob: ${blob.url}`);
 
     // Step 2: Send the public URL to OnDemand Media API for text extraction
     const mediaResponse = await fetch(`${ONDEMAND_MEDIA_API}/public/file`, {
@@ -64,18 +61,12 @@ export async function POST(request: NextRequest) {
     let extractedText: string | null = null;
     const fileUrl = blob.url;
 
-    if (!mediaResponse.ok) {
-      const errorText = await mediaResponse.text();
-      console.error("OnDemand Media API error (continuing without extraction):", errorText);
-      // Continue without text extraction - file is still stored in Vercel Blob
-    } else {
+    if (mediaResponse.ok) {
       const mediaData = await mediaResponse.json();
-      console.log("OnDemand upload response:", JSON.stringify(mediaData, null, 2));
-
       // Get extracted content from OnDemand response
       extractedText = mediaData.data?.context || mediaData.context || null;
-      console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
     }
+    // If not ok, continue without text extraction - file is still stored in Vercel Blob
 
     // Save to database with extracted text for AI analysis
     const report = await prisma.report.create({
@@ -100,9 +91,8 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Upload failed", details: String(error) },
+      { error: "Upload failed", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

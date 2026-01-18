@@ -254,7 +254,6 @@ export async function loadKnowledgeBase(): Promise<KnowledgeChunk[]> {
       }
     }
 
-    console.log(`Loaded ${chunks.length} knowledge chunks from ${files.length} files`);
     knowledgeBase = chunks;
     return chunks;
   } catch (error) {

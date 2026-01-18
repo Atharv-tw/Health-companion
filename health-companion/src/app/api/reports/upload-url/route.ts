@@ -25,10 +25,8 @@ export async function POST(request: Request): Promise<NextResponse> {
           }),
         };
       },
-      onUploadCompleted: async ({ blob }) => {
-        // We will handle metadata saving in a separate API call from the client
-        // to keep the upload flow simple and responsive.
-        console.log('Upload completed:', blob.url);
+      onUploadCompleted: async ({ blob: _blob }) => {
+        // Metadata saving is handled in a separate API call from the client
       },
     });
 

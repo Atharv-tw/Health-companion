@@ -108,8 +108,6 @@ async function createSession(
     body.contextMetadata = contextMetadata;
   }
 
-  console.log("Creating session with body:", JSON.stringify(body));
-
   const response = await fetch(`${ONDEMAND_CHAT_API}/sessions`, {
     method: "POST",
     headers: {
@@ -121,12 +119,10 @@ async function createSession(
 
   if (!response.ok) {
     const error = await response.text();
-    console.error("Session creation error:", error);
-    throw new Error("Failed to create chat session");
+    throw new Error(`Failed to create chat session: ${error}`);
   }
 
   const data = await response.json();
-  console.log("Session created:", data);
   return data.data?.id || data.id;
 }
 
@@ -145,11 +141,6 @@ async function submitQuery(
 
   // Filter out empty agent IDs
   const activeAgents = agentIds.filter(Boolean);
-
-  console.log(`Submitting query to session ${sessionId}`);
-  console.log(`Using model: ${FULFILLMENT_MODEL}`);
-  console.log(`Active agents: ${activeAgents.length > 0 ? activeAgents.join(", ") : "none"}`);
-  console.log(`Query: ${query.substring(0, 100)}...`);
 
   // Build personalized fulfillment prompt with user context
   const userName = context?.userName ? context.userName : "there";
@@ -254,12 +245,10 @@ The user's name is ${userName}.${userContextBlock}${ragContextBlock}`;
 
   if (!response.ok) {
     const error = await response.text();
-    console.error("Query error:", error);
     throw new Error(`Failed to get response: ${error}`);
   }
 
   const data = await response.json();
-  console.log("Chat API response:", JSON.stringify(data, null, 2));
 
   // Extract the answer from response
   const answer =
@@ -291,7 +280,6 @@ export async function chat(
   const agentIds = customAgentIds && customAgentIds.length > 0
     ? customAgentIds
     : getRelevantPlugins(message);
-  console.log(`Selected agents: ${agentIds.length > 0 ? agentIds.join(", ") : "none (using model only)"}`);
 
   // Search knowledge base for relevant context (RAG)
   let ragContext = "";
@@ -301,10 +289,8 @@ export async function chat(
     if (ragResult.context) {
       ragContext = ragResult.context;
       ragCitations = ragResult.citations;
-      console.log(`RAG found ${ragCitations.length} relevant documents`);
     }
-  } catch (error) {
-    console.error("RAG search error:", error);
+  } catch {
     // Continue without RAG context
   }
 
@@ -360,9 +346,6 @@ export async function uploadMedia(
   const agentId =
     fileType === "document" ? MEDIA_PLUGINS.DOCUMENT : MEDIA_PLUGINS.IMAGE;
 
-  console.log(`Uploading media: ${fileName} (${fileType})`);
-  console.log(`Using agent: ${agentId}`);
-
   const requestBody: Record<string, unknown> = {
     url: fileUrl,
     name: fileName,
@@ -388,12 +371,10 @@ export async function uploadMedia(
 
   if (!response.ok) {
     const error = await response.text();
-    console.error("Media upload error:", error);
     throw new Error(`Failed to upload media: ${error}`);
   }
 
   const data = await response.json();
-  console.log("Media upload response:", JSON.stringify(data, null, 2));
 
   return {
     mediaId: data.data?.id || data.id,
