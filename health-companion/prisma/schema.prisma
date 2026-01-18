@@ -8,7 +8,7 @@ datasource db {
 }
 
 model ChatMessage {
-  id          String      @id
+  id          String      @id @default(cuid())
   role        String
   content     String
   citations   Json?
@@ -18,17 +18,17 @@ model ChatMessage {
 }
 
 model ChatSession {
-  id                String        @id
+  id                String        @id @default(cuid())
   ondemandSessionId String?
   createdAt         DateTime      @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime      @updatedAt
   userId            String
   ChatMessage       ChatMessage[]
   User              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model EmergencyContact {
-  id           String   @id
+  id           String   @id @default(cuid())
   name         String
   phone        String
   email        String?
@@ -39,7 +39,7 @@ model EmergencyContact {
 }
 
 model HealthLog {
-  id        String     @id
+  id        String     @id @default(cuid())
   symptoms  Json
   vitals    Json?
   lifestyle Json?
@@ -50,20 +50,20 @@ model HealthLog {
 }
 
 model Reminder {
-  id              String       @id
+  id              String       @id @default(cuid())
   type            ReminderType
   title           String
   schedule        Json
   enabled         Boolean      @default(true)
   lastTriggeredAt DateTime?
   createdAt       DateTime     @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime     @updatedAt
   userId          String
   User            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Report {
-  id            String   @id
+  id            String   @id @default(cuid())
   fileName      String
   mimeType      String
   size          Int
@@ -76,7 +76,7 @@ model Report {
 }
 
 model RiskAlert {
-  id            String    @id
+  id            String    @id @default(cuid())
   riskLevel     RiskLevel
   reasons       String[]
   nextSteps     String[]
@@ -89,14 +89,14 @@ model RiskAlert {
 }
 
 model User {
-  id                String             @id
+  id                String             @id @default(cuid())
   email             String             @unique
   passwordHash      String
   name              String?
   profile           Json?
   consentAcceptedAt DateTime?
   createdAt         DateTime           @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime           @updatedAt
   ChatSession       ChatSession[]
   EmergencyContact  EmergencyContact[]
   HealthLog         HealthLog[]
