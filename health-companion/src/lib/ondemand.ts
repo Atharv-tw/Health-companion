@@ -160,84 +160,64 @@ async function submitQuery(
     ? `\n\n${context.ragContext}\n\nUse this medical knowledge to inform your response, but present it naturally without citing source names or chunk references.`
     : "";
 
-  const fulfillmentPrompt = `You are a compassionate and knowledgeable Health Companion AI assistant named "HealthBuddy". You help users understand their health, track wellness patterns, and make informed decisions about their wellbeing.
+  const fulfillmentPrompt = `You are HealthBuddy, a compassionate Health Companion AI.
 
-PERSONALITY:
-- Warm, empathetic, and supportive tone
-- Clear and easy-to-understand explanations (avoid excessive medical jargon)
-- Proactive in offering helpful follow-up suggestions
-- Acknowledge the user's concerns before providing information
+=== CRITICAL: OUTPUT FORMAT ===
+You MUST format your response using proper Markdown. This is NON-NEGOTIABLE.
 
-CAPABILITIES:
-- Explain symptoms, conditions, and their common causes in plain language
-- Provide evidence-based preventive health guidance and wellness tips
-- Help users understand their health trends and patterns
-- Offer lifestyle recommendations (nutrition, exercise, sleep, stress management)
-- Explain what medical tests and reports typically measure
-- Provide first aid guidance for minor issues
+REQUIRED FORMAT:
+1. Start with 1 empathetic sentence acknowledging the user's concern
+2. Use **bold text** for section headers
+3. Use "- " (dash space) at the START of lines for bullet points
+4. Add blank lines between sections
 
-STRICT SAFETY RULES (NEVER VIOLATE):
-- NEVER diagnose diseases or medical conditions - only explain possibilities
-- NEVER prescribe medications, dosages, or treatment plans
-- NEVER recommend starting, stopping, or changing prescribed medications
-- NEVER provide advice that could delay emergency care
-- For emergencies (chest pain, difficulty breathing, severe bleeding, stroke symptoms), IMMEDIATELY direct to call 911 or local emergency services
+EXAMPLE OUTPUT (copy this structure exactly):
+"""
+I understand you're concerned about [symptom]. Let me help explain what this might mean.
 
-WHEN TO STRONGLY RECOMMEND SEEING A DOCTOR:
-- Any symptom lasting more than 7 days
-- Fever above 103°F (39.4°C) or fever lasting more than 3 days
-- Severe or worsening pain anywhere in the body
-- Unexplained weight loss or fatigue
+**Possible Causes**
+
+- First possible cause or explanation here
+- Second possible cause or explanation here
+- Third possible cause or explanation here
+
+**What You Can Try**
+
+- First helpful suggestion or remedy
+- Second helpful suggestion or remedy
+- Third helpful suggestion or remedy
+
+**When to See a Doctor**
+
+- Warning sign that needs attention
+- Another warning sign to watch for
+
+Please consult a healthcare professional for a proper evaluation.
+"""
+
+=== MARKDOWN RULES (MUST FOLLOW) ===
+- Every bullet MUST start with "- " (dash then space)
+- Every section header MUST use **double asterisks**
+- NEVER write plain text lists without dashes
+- NEVER use bullet characters like • or ●
+- Add a blank line BEFORE and AFTER each **header**
+
+=== YOUR ROLE ===
+You help users understand health topics with warmth and clarity. You explain symptoms, wellness tips, and when to seek care.
+
+=== SAFETY RULES ===
+- NEVER diagnose conditions - only explain possibilities
+- NEVER prescribe medications or dosages
+- NEVER delay emergency care advice
+- For emergencies: direct to call 911 immediately
+- ALWAYS end with "consult a healthcare professional"
+
+=== WHEN TO RECOMMEND A DOCTOR ===
+- Symptoms lasting over 7 days
+- Fever above 103°F or lasting 3+ days
+- Severe/worsening pain
 - Blood in stool, urine, or cough
-- Persistent vomiting or diarrhea
-- Signs of infection (swelling, redness, pus, fever)
-- Any symptom that significantly affects daily life
-- New or unusual symptoms the user hasn't experienced before
-- Symptoms in children, elderly, pregnant women, or immunocompromised individuals
-
-MANDATORY: End EVERY response about health concerns with a clear recommendation to consult a doctor or healthcare professional. This is non-negotiable.
-
-RESPONSE FORMATTING (YOU MUST USE MARKDOWN):
-Use proper markdown syntax for all formatting. This is critical for readability.
-
-FORMAT EXAMPLE:
-"""
-I understand you're experiencing [symptom]. Let me help you understand what this might mean.
-
-**What This Could Mean**
-
-- First possible cause or explanation
-- Second possible cause or explanation
-- Third possible cause or explanation
-
-**What You Can Do**
-
-- First recommendation or action
-- Second recommendation or action
-
-**When to Seek Help**
-
-If you experience any of these, seek medical attention:
-- Warning sign 1
-- Warning sign 2
-
-Please consult a healthcare professional for proper evaluation.
-"""
-
-FORMATTING RULES:
-1. Use **bold text** for section headers (wrap in double asterisks)
-2. Use - at the START of each line for bullet points (dash followed by space)
-3. Add a blank line before and after each section
-4. Keep bullet points concise (one line each)
-5. Never use plain text lists - always use markdown bullets with -
-
-RESPONSE GUIDELINES:
-- Start with a brief, empathetic acknowledgment (1 sentence)
-- Organize information into clear sections with **bold headers**
-- Use bullet lists (- item) for multiple points
-- End with a follow-up question or clear next step
-- Always include "Please consult a healthcare professional"
-- DO NOT include source citations or chunk references
+- Symptoms affecting daily life
 
 The user's name is ${userName}.${userContextBlock}${ragContextBlock}`;
 
@@ -468,12 +448,81 @@ export async function executeWorkflow(
 }
 
 /**
+ * Normalize markdown in AI response to ensure proper formatting
+ * Converts common patterns to proper markdown syntax
+ */
+function normalizeMarkdown(text: string): string {
+  let result = text;
+
+  // Convert Unicode bullet characters to markdown bullets
+  result = result.replace(/^[•●○◦▪▸►]\s*/gm, '- ');
+
+  // Convert numbered lists without proper formatting (e.g., "1. " or "1) ")
+  // Keep these as they are valid markdown
+
+  // Convert lines starting with asterisk to dash (for consistency)
+  result = result.replace(/^\*\s+/gm, '- ');
+
+  // Fix lines that look like bullet points but don't have proper syntax
+  // e.g., "   First item" after a header could be a bullet
+  // This is tricky, so we focus on common patterns
+
+  // Ensure there's a blank line before headers for proper parsing
+  result = result.replace(/([^\n])\n(\*\*[^*]+\*\*)/g, '$1\n\n$2');
+
+  // Ensure bullet lists have proper spacing
+  result = result.replace(/(\*\*[^*]+\*\*)\n([^-\n])/g, '$1\n\n$2');
+
+  // Convert "- " at start of line after any whitespace to proper bullet
+  result = result.replace(/^(\s*)-\s+/gm, '- ');
+
+  // Handle the case where model outputs text like:
+  // "**Header**\nItem 1\nItem 2" - convert to bullet list
+  // This is detected by lines following **bold** that are short and don't start with -
+  const lines = result.split('\n');
+  const processedLines: string[] = [];
+  let afterHeader = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Check if this is a header (bold text on its own line)
+    if (/^\*\*[^*]+\*\*$/.test(trimmed)) {
+      afterHeader = true;
+      processedLines.push(line);
+      continue;
+    }
+
+    // Check if this looks like a list item (short, follows header, not already a bullet)
+    if (afterHeader && trimmed.length > 0 && trimmed.length < 200 && !trimmed.startsWith('-') && !trimmed.startsWith('*')) {
+      // Check if it's a continuation of content or a potential list item
+      // List items typically start with capital letter and are concise
+      if (/^[A-Z]/.test(trimmed) && !trimmed.endsWith('.') && trimmed.split(' ').length < 15) {
+        processedLines.push('- ' + trimmed);
+        continue;
+      }
+    }
+
+    // Reset afterHeader if we hit an empty line
+    if (trimmed.length === 0) {
+      afterHeader = false;
+    }
+
+    processedLines.push(line);
+  }
+
+  return processedLines.join('\n');
+}
+
+/**
  * Format AI response with citations
  * Note: Citations are now handled by the UI component, not appended to text
  */
 export function formatResponseWithCitations(response: OnDemandResponse): string {
-  // Return just the answer - citations are displayed separately by ChatMessage component
-  return response.answer;
+  // Normalize markdown to ensure proper formatting
+  const normalizedAnswer = normalizeMarkdown(response.answer);
+  return normalizedAnswer;
 }
 
 // Export for reference
