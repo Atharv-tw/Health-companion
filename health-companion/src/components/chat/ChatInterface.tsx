@@ -170,7 +170,6 @@ export function ChatInterface({ initialMessages = [], sessionId: initialSessionI
                 key={message.id}
                 role={message.role}
                 content={message.content}
-                citations={message.citations}
                 isEmergency={message.isEmergency}
                 isBlocked={message.isBlocked}
                 timestamp={message.createdAt}
