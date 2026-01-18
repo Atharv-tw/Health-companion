@@ -37,20 +37,20 @@ export function MobileReminders() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAF9] pb-32">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6 py-4">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] dark:bg-slate-950 pb-32">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 py-4">
         <Link href="/dashboard">
           <Button variant="ghost" size="icon" className="rounded-full">
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-gray-400">Reminders</span>
+        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Reminders</span>
         <div className="w-10" />
       </div>
 
       <main className="flex-1 pt-24 px-6 space-y-8">
         <div>
-          <h1 className="text-5xl font-bold tracking-tighter text-gray-900 leading-[0.9] uppercase">
+          <h1 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-gray-50 leading-[0.9] uppercase">
             Stay <br />
             <span className="text-primary">Sync'd.</span>
           </h1>

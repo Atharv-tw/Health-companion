@@ -126,19 +126,8 @@ export function ChatMessage({
           })}
         </div>
 
-        {/* Citations */}
-        {citations && citations.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-gray-200">
-            <p className="text-xs text-gray-500 mb-1">Sources:</p>
-            <ul className="text-xs text-gray-600 space-y-1">
-              {citations.map((citation, index) => (
-                <li key={index}>
-                  {citation.title || citation.source}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Citations - hidden from users as they show internal source names
+            The AI response already includes relevant source mentions inline */}
 
         {/* Timestamp */}
         {timestamp && (

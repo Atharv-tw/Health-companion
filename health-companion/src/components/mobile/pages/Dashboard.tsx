@@ -69,20 +69,20 @@ export function MobileDashboard() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-32">
+    <div className="flex flex-col min-h-screen pb-32 bg-[#FAFAF9] dark:bg-slate-950">
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-6 py-6 bg-white/50 backdrop-blur-xl border-b border-gray-100">
+      <div className="flex items-center justify-between px-6 py-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
             <UserCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vitality Profile</p>
-            <h2 className="text-lg font-bold text-gray-900 leading-none">{session?.user?.name || "Member"}</h2>
+            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Vitality Profile</p>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-50 leading-none">{session?.user?.name || "Member"}</h2>
           </div>
         </div>
         <Link href="/log">
-          <Button size="sm" className="rounded-full bg-gray-900 text-white text-[10px] font-bold uppercase tracking-widest h-9 px-4">
+          <Button size="sm" className="rounded-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] font-bold uppercase tracking-widest h-9 px-4">
             + New Log
           </Button>
         </Link>
@@ -90,13 +90,13 @@ export function MobileDashboard() {
 
       <main className="px-6 py-8 space-y-8">
         {/* Status Center */}
-        <div className="text-center space-y-6 py-4 bg-white border border-white shadow-xl rounded-[3rem] relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/30 to-transparent pointer-events-none" />
+        <div className="text-center space-y-6 py-4 bg-white dark:bg-slate-900 border border-white dark:border-slate-800 shadow-xl rounded-[3rem] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/30 dark:from-blue-900/20 to-transparent pointer-events-none" />
           <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] relative z-10">Current Status</p>
           <div className="relative z-10">
             <HealthOrb status={healthData?.summary.latestRiskLevel as any || "LOW"} />
           </div>
-          <h3 className="text-3xl font-bold text-gray-900 uppercase tracking-tighter relative z-10">
+          <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-50 uppercase tracking-tighter relative z-10">
             {healthData?.summary.latestRiskLevel || "Optimal"}
           </h3>
         </div>
@@ -123,10 +123,10 @@ export function MobileDashboard() {
         <AirQualityCard compact />
 
         {/* Latest Log Snapshot */}
-        <div className="p-8 bg-gray-50 border border-gray-100 rounded-[2.5rem] space-y-6">
+        <div className="p-8 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[2.5rem] space-y-6">
           <div className="flex items-center justify-between">
-            <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Latest Snapshot</h4>
-            <span className="text-[10px] font-medium text-gray-400">
+            <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">Latest Snapshot</h4>
+            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
               {healthData?.latestLog ? new Date(healthData.latestLog.createdAt).toLocaleDateString() : "No data"}
             </span>
           </div>
@@ -135,14 +135,14 @@ export function MobileDashboard() {
             {healthData?.latestLog?.symptoms.items.length ? (
               <div className="flex flex-wrap gap-2">
                 {healthData.latestLog.symptoms.items.map(s => (
-                  <span key={s.name} className="px-3 py-1.5 bg-white border border-white shadow-sm rounded-xl text-xs font-medium text-gray-600">
+                  <span key={s.name} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-white dark:border-slate-700 shadow-sm rounded-xl text-xs font-medium text-gray-600 dark:text-gray-300">
                     {s.name}
                   </span>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center gap-3 text-green-600">
-                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+              <div className="flex items-center gap-3 text-green-600 dark:text-green-400">
+                <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                   <Activity className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium">System status nominal</span>
@@ -164,13 +164,13 @@ export function MobileDashboard() {
 
 function MobileMetricCard({ icon, label, value, unit, color }: any) {
   return (
-    <div className="bg-white border border-white shadow-lg p-6 rounded-[2rem] space-y-3 text-center">
-      <div className={cn("w-10 h-10 rounded-2xl bg-gray-50 mx-auto flex items-center justify-center", color)}>
+    <div className="bg-white dark:bg-slate-900 border border-white dark:border-slate-800 shadow-lg p-6 rounded-[2rem] space-y-3 text-center">
+      <div className={cn("w-10 h-10 rounded-2xl bg-gray-50 dark:bg-slate-800 mx-auto flex items-center justify-center", color)}>
         {icon}
       </div>
       <div>
-        <div className="text-xl font-bold text-gray-900">{value} <span className="text-[10px] font-normal text-gray-400">{unit}</span></div>
-        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{label}</div>
+        <div className="text-xl font-bold text-gray-900 dark:text-gray-50">{value} <span className="text-[10px] font-normal text-gray-400 dark:text-gray-500">{unit}</span></div>
+        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{label}</div>
       </div>
     </div>
   );
@@ -181,10 +181,10 @@ function MobileActionLink({ href, label, icon, alert }: any) {
     <Link href={href}>
       <div className={cn(
         "flex items-center justify-between p-5 rounded-3xl border transition-all active:scale-95",
-        alert ? "bg-red-50 border-red-100 text-red-600" : "bg-white border-white shadow-md text-gray-700"
+        alert ? "bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400" : "bg-white dark:bg-slate-900 border-white dark:border-slate-800 shadow-md text-gray-700 dark:text-gray-300"
       )}>
         <div className="flex items-center gap-4">
-          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", alert ? "bg-white text-red-500" : "bg-primary/5 text-primary")}>
+          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", alert ? "bg-white dark:bg-red-900/30 text-red-500" : "bg-primary/5 text-primary")}>
             {icon}
           </div>
           <span className="text-sm font-bold uppercase tracking-widest">{label}</span>

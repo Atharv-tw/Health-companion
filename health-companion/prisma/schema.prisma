@@ -7,11 +7,101 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum RiskLevel {
-  LOW
-  MEDIUM
-  HIGH
-  EMERGENCY
+model ChatMessage {
+  id          String      @id
+  role        String
+  content     String
+  citations   Json?
+  createdAt   DateTime    @default(now())
+  sessionId   String
+  ChatSession ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model ChatSession {
+  id                String        @id
+  ondemandSessionId String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime
+  userId            String
+  ChatMessage       ChatMessage[]
+  User              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyContact {
+  id           String   @id
+  name         String
+  phone        String
+  email        String?
+  relationship String?
+  createdAt    DateTime @default(now())
+  userId       String
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model HealthLog {
+  id        String     @id
+  symptoms  Json
+  vitals    Json?
+  lifestyle Json?
+  createdAt DateTime   @default(now())
+  userId    String
+  User      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  RiskAlert RiskAlert?
+}
+
+model Reminder {
+  id              String       @id
+  type            ReminderType
+  title           String
+  schedule        Json
+  enabled         Boolean      @default(true)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime
+  userId          String
+  User            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id            String   @id
+  fileName      String
+  mimeType      String
+  size          Int
+  storageKey    String
+  reportType    String?
+  extractedText String?
+  createdAt     DateTime @default(now())
+  userId        String
+  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RiskAlert {
+  id            String    @id
+  riskLevel     RiskLevel
+  reasons       String[]
+  nextSteps     String[]
+  redFlags      String[]
+  consultAdvice String?
+  ruleVersion   String    @default("1.0")
+  createdAt     DateTime  @default(now())
+  healthLogId   String    @unique
+  HealthLog     HealthLog @relation(fields: [healthLogId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                String             @id
+  email             String             @unique
+  passwordHash      String
+  name              String?
+  profile           Json?
+  consentAcceptedAt DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime
+  ChatSession       ChatSession[]
+  EmergencyContact  EmergencyContact[]
+  HealthLog         HealthLog[]
+  Reminder          Reminder[]
+  Report            Report[]
 }
 
 enum ReminderType {
@@ -21,107 +111,9 @@ enum ReminderType {
   CUSTOM
 }
 
-model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  passwordHash      String
-  name              String?
-  profile           Json?     // { age, conditions[], allergies[] }
-  consentAcceptedAt DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  healthLogs        HealthLog[]
-  reports           Report[]
-  reminders         Reminder[]
-  emergencyContacts EmergencyContact[]
-  chatSessions      ChatSession[]
-}
-
-model HealthLog {
-  id        String   @id @default(cuid())
-  symptoms  Json     // { items: [{ name, severity, duration }], freeText? }
-  vitals    Json?    // { heartRate?, temperature?, bpSystolic?, bpDiastolic?, spO2? }
-  lifestyle Json?    // { sleepHours?, stressLevel?, hydration? }
-  createdAt DateTime @default(now())
-
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  riskAlert RiskAlert?
-}
-
-model RiskAlert {
-  id           String    @id @default(cuid())
-  riskLevel    RiskLevel
-  reasons      String[]
-  nextSteps    String[]
-  redFlags     String[]
-  consultAdvice String?
-  ruleVersion  String    @default("1.0")
-  createdAt    DateTime  @default(now())
-
-  healthLogId  String    @unique
-  healthLog    HealthLog @relation(fields: [healthLogId], references: [id], onDelete: Cascade)
-}
-
-model Report {
-  id            String   @id @default(cuid())
-  fileName      String
-  mimeType      String
-  size          Int
-  storageKey    String
-  reportType    String?  // e.g., "PDF", "IMAGE", "DOCUMENT"
-  extractedText String?  // Text extracted by OnDemand Media API plugins (OCR/PDF parsing)
-  createdAt     DateTime @default(now())
-
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Reminder {
-  id              String       @id @default(cuid())
-  type            ReminderType
-  title           String
-  schedule        Json         // { times: string[], frequency: "daily" | "custom", days?: number[] }
-  enabled         Boolean      @default(true)
-  lastTriggeredAt DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  userId          String
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model EmergencyContact {
-  id           String  @id @default(cuid())
-  name         String
-  phone        String
-  email        String?
-  relationship String?
-  createdAt    DateTime @default(now())
-
-  userId       String
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model ChatSession {
-  id            String   @id @default(cuid())
-  ondemandSessionId String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages      ChatMessage[]
-}
-
-model ChatMessage {
-  id        String   @id @default(cuid())
-  role      String   // "user" | "assistant"
-  content   String
-  citations Json?    // [{ source, text }]
-  createdAt DateTime @default(now())
-
-  sessionId String
-  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
 }

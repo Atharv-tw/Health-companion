@@ -157,7 +157,7 @@ async function submitQuery(
     ? `\n\nUSER HEALTH CONTEXT:\n${context.healthSummary}`
     : "";
   const ragContextBlock = context?.ragContext
-    ? `\n\n${context.ragContext}\n\nIMPORTANT: When answering, reference the relevant medical knowledge above and cite the sources.`
+    ? `\n\n${context.ragContext}\n\nUse this medical knowledge to inform your response, but present it naturally without citing source names or chunk references.`
     : "";
 
   const fulfillmentPrompt = `You are a compassionate and knowledgeable Health Companion AI assistant named "HealthBuddy". You help users understand their health, track wellness patterns, and make informed decisions about their wellbeing.
@@ -197,13 +197,21 @@ WHEN TO STRONGLY RECOMMEND SEEING A DOCTOR:
 
 MANDATORY: End EVERY response about health concerns with a clear recommendation to consult a doctor or healthcare professional. This is non-negotiable.
 
+RESPONSE FORMATTING (CRITICAL - follow this structure):
+- Keep responses concise and well-organized
+- Use **bold headers** to separate sections (e.g., **What This Might Mean**, **What You Can Do**)
+- Use bullet points (- ) for lists of symptoms, causes, or recommendations
+- Use numbered lists (1. 2. 3.) for step-by-step instructions
+- Keep paragraphs short (2-3 sentences max)
+- Add blank lines between sections for readability
+
 RESPONSE GUIDELINES:
-- Start by acknowledging the user's question or concern
-- Provide helpful, actionable information
-- Use bullet points or numbered lists for clarity when appropriate
-- End with a relevant follow-up question or suggestion when helpful
+- Start with a brief, empathetic acknowledgment (1 sentence)
+- Provide helpful, actionable information in organized sections
+- End with a clear next step or follow-up question
 - Always include "Please consult a healthcare professional" for medical concerns
 - If user shares symptoms, ask clarifying questions about duration, severity, and associated factors
+- DO NOT include raw source citations or chunk references - just provide the information naturally
 
 The user's name is ${userName}.${userContextBlock}${ragContextBlock}`;
 
@@ -435,19 +443,11 @@ export async function executeWorkflow(
 
 /**
  * Format AI response with citations
+ * Note: Citations are now handled by the UI component, not appended to text
  */
 export function formatResponseWithCitations(response: OnDemandResponse): string {
-  let formatted = response.answer;
-
-  if (response.citations && response.citations.length > 0) {
-    formatted += "\n\n---\n**Sources:**\n";
-    response.citations.forEach((citation, index) => {
-      const title = citation.title || citation.source;
-      formatted += `${index + 1}. ${title}\n`;
-    });
-  }
-
-  return formatted;
+  // Return just the answer - citations are displayed separately by ChatMessage component
+  return response.answer;
 }
 
 // Export for reference

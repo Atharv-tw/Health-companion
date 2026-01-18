@@ -18,14 +18,14 @@ export function MobileReports() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAF9] pb-32">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6 py-4">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] dark:bg-slate-950 pb-32">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 py-4">
         <Link href="/dashboard">
           <Button variant="ghost" size="icon" className="rounded-full">
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-gray-400">The Vault</span>
+        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">The Vault</span>
         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsAdding(!isAdding)}>
           <Plus className={cn("w-5 h-5 transition-transform", isAdding && "rotate-45")} />
         </Button>
@@ -40,10 +40,10 @@ export function MobileReports() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="p-8 bg-white border border-white shadow-2xl rounded-[2.5rem] space-y-6 mb-8">
+              <div className="p-8 bg-white dark:bg-slate-900 border border-white dark:border-slate-800 shadow-2xl rounded-[2.5rem] space-y-6 mb-8">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-gray-900 uppercase text-xs tracking-widest">Upload Protocol</h3>
-                  <p className="text-[10px] text-gray-400 font-light uppercase tracking-tighter">Clinical Files (Max 10MB)</p>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-50 uppercase text-xs tracking-widest">Upload Protocol</h3>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-light uppercase tracking-tighter">Clinical Files (Max 10MB)</p>
                 </div>
                 <UploadDropzone onUploadComplete={handleUploadComplete} />
               </div>
@@ -56,18 +56,18 @@ export function MobileReports() {
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <FileText className="w-4 h-4" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tighter uppercase">Registry.</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tighter uppercase">Registry.</h2>
           </div>
-          
+
           <ReportsList refreshTrigger={refreshTrigger} />
         </div>
 
-        <div className="p-8 bg-blue-50/50 border border-blue-100 rounded-[2.5rem] space-y-4">
-          <div className="flex items-center gap-2 text-blue-600">
+        <div className="p-8 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-[2.5rem] space-y-4">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
             <ShieldCheck className="w-4 h-4" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Vault Security</span>
           </div>
-          <p className="text-xs text-blue-800 leading-relaxed font-light">
+          <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed font-light">
             Data is sharded and restricted to this authenticated identity only.
           </p>
         </div>

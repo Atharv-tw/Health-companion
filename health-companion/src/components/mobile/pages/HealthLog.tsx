@@ -77,14 +77,14 @@ export function MobileHealthLog() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAF9] pb-32">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6 py-4">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] dark:bg-slate-950 pb-32">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 py-4">
         <Link href="/dashboard">
           <Button variant="ghost" size="icon" className="rounded-full">
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-gray-400">Log Protocol</span>
+        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Log Protocol</span>
         <div className="w-10" />
       </div>
 
@@ -106,9 +106,9 @@ export function MobileHealthLog() {
                       return StepIcon ? <StepIcon className="w-4 h-4" /> : null;
                     })()}
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 tracking-tighter uppercase">{steps[currentStepIndex].label}</h2>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tighter uppercase">{steps[currentStepIndex].label}</h2>
                 </div>
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <motion.div 
                     animate={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
                     className="h-full bg-primary"
@@ -149,18 +149,18 @@ export function MobileHealthLog() {
 
               {currentStep === "result" && (
                 <div className="space-y-8">
-                  <div className="p-10 bg-white border border-white shadow-2xl rounded-[3rem] text-center space-y-4">
+                  <div className="p-10 bg-white dark:bg-slate-900 border border-white dark:border-slate-800 shadow-2xl rounded-[3rem] text-center space-y-4">
                     <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-                    <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight leading-none">Sync Successful</h3>
-                    <p className="text-gray-500 font-light text-sm">Clinical analysis generated below.</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 uppercase tracking-tight leading-none">Sync Successful</h3>
+                    <p className="text-gray-500 dark:text-gray-400 font-light text-sm">Clinical analysis generated below.</p>
                   </div>
                   {riskAssessment && <RiskCard assessment={riskAssessment} showDetails={true} />}
                   
                   <div className="space-y-3 pt-4">
-                    <Button className="w-full h-16 rounded-[2rem] bg-gray-900 text-white font-bold uppercase tracking-widest text-[11px]" onClick={() => router.push("/chat")}>
+                    <Button className="w-full h-16 rounded-[2rem] bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold uppercase tracking-widest text-[11px]" onClick={() => router.push("/chat")}>
                       Open AI Oracle
                     </Button>
-                    <Button variant="outline" className="w-full h-16 rounded-[2rem] bg-white border-gray-100 text-gray-500 font-bold uppercase tracking-widest text-[11px]" onClick={() => {
+                    <Button variant="outline" className="w-full h-16 rounded-[2rem] bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-700 text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest text-[11px]" onClick={() => {
                       setCurrentStep("symptoms");
                       setFormData({ symptoms: { items: [], freeText: "" }, vitals: {}, lifestyle: {} });
                       setRiskAssessment(null);
@@ -179,17 +179,17 @@ export function MobileHealthLog() {
         <div className="fixed bottom-24 left-0 right-0 px-6 z-50">
           <div className="flex gap-3">
             {currentStepIndex > 0 && (
-              <Button 
-                variant="outline" 
-                className="h-16 w-16 rounded-3xl bg-white border-white shadow-xl flex items-center justify-center p-0"
+              <Button
+                variant="outline"
+                className="h-16 w-16 rounded-3xl bg-white dark:bg-slate-900 border-white dark:border-slate-800 shadow-xl flex items-center justify-center p-0"
                 onClick={handleBack}
               >
-                <ChevronLeft className="w-6 h-6 text-gray-400" />
+                <ChevronLeft className="w-6 h-6 text-gray-400 dark:text-gray-500" />
               </Button>
             )}
-            
-            <Button 
-              className="flex-1 h-16 rounded-3xl bg-gray-900 text-white font-bold uppercase tracking-widest text-[11px] shadow-2xl"
+
+            <Button
+              className="flex-1 h-16 rounded-3xl bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold uppercase tracking-widest text-[11px] shadow-2xl"
               onClick={currentStep === "review" ? handleSubmit : handleNext}
               disabled={isSubmitting}
             >
@@ -205,9 +205,9 @@ export function MobileHealthLog() {
 
 function MobileReviewItem({ title, value }: { title: string; value: string }) {
   return (
-    <div className="flex items-center justify-between p-6 bg-white border border-white shadow-lg rounded-3xl">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{title}</span>
-      <span className="text-sm font-bold text-gray-900">{value}</span>
+    <div className="flex items-center justify-between p-6 bg-white dark:bg-slate-900 border border-white dark:border-slate-800 shadow-lg rounded-3xl">
+      <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{title}</span>
+      <span className="text-sm font-bold text-gray-900 dark:text-gray-50">{value}</span>
     </div>
   );
 }

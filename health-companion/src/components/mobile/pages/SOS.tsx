@@ -54,14 +54,14 @@ export function MobileSOS({ autoActivate = false, emergencyContext = null }: Mob
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAF9] pb-32">
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6 py-4">
+    <div className="flex flex-col min-h-screen bg-[#FAFAF9] dark:bg-slate-950 pb-32">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 py-4">
         <Link href="/dashboard">
           <Button variant="ghost" size="icon" className="rounded-full">
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-red-500">SOS Guard</span>
+        <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-red-500 dark:text-red-400">SOS Guard</span>
         <div className="w-10" />
       </div>
 
@@ -84,8 +84,8 @@ export function MobileSOS({ autoActivate = false, emergencyContext = null }: Mob
         )}
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tighter text-gray-900 leading-tight uppercase">
-            Acute <span className="text-red-600">Distress</span>
+          <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50 leading-tight uppercase">
+            Acute <span className="text-red-600 dark:text-red-400">Distress</span>
           </h1>
         </div>
 
@@ -94,9 +94,9 @@ export function MobileSOS({ autoActivate = false, emergencyContext = null }: Mob
         </div>
 
         <div className="w-full space-y-4">
-          <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight text-center">Protocol Nodes</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-50 uppercase tracking-tight text-center">Protocol Nodes</h2>
 
-          <div className="bg-white border border-gray-100 shadow-xl rounded-3xl p-4 overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-xl rounded-3xl p-4 overflow-hidden">
             <EmergencyContacts contacts={contacts} />
           </div>
         </div>

@@ -7,22 +7,22 @@ import Link from "next/link";
 
 export function MobileMethodology() {
   return (
-    <div className="relative min-h-screen bg-[#FAFAF9] flex flex-col">
+    <div className="relative min-h-screen bg-[#FAFAF9] dark:bg-slate-950 flex flex-col">
       <ShimmerBackground />
-      
+
       <header className="px-6 py-6 flex items-center gap-4 z-20">
         <Link href="/">
-          <Button variant="ghost" size="icon" className="rounded-full bg-white/50 border border-white">
+          <Button variant="ghost" size="icon" className="rounded-full bg-white/50 dark:bg-slate-800/50 border border-white dark:border-slate-700">
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-bold text-[11px] uppercase tracking-[0.25em] text-gray-400">The Method</span>
+        <span className="font-bold text-[11px] uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">The Method</span>
       </header>
 
       <main className="flex-1 px-6 pb-24 z-10">
         <div className="space-y-16 pt-4">
           <div>
-            <h1 className="text-5xl font-bold tracking-tighter text-gray-900 leading-[0.9] uppercase">
+            <h1 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-gray-50 leading-[0.9] uppercase">
               Clinical <br />
               <span className="text-primary">Logic.</span>
             </h1>
@@ -61,10 +61,10 @@ function MobileStep({ num, title, desc, icon }: { num: string; title: string; de
         {num}
       </div>
       <div className="flex items-center gap-3">
-        <div className="text-gray-400">{icon}</div>
-        <h3 className="font-bold text-gray-900 uppercase text-sm tracking-widest">{title}</h3>
+        <div className="text-gray-400 dark:text-gray-500">{icon}</div>
+        <h3 className="font-bold text-gray-900 dark:text-gray-50 uppercase text-sm tracking-widest">{title}</h3>
       </div>
-      <p className="text-gray-500 font-light leading-relaxed">{desc}</p>
+      <p className="text-gray-500 dark:text-gray-400 font-light leading-relaxed">{desc}</p>
     </div>
   );
 }

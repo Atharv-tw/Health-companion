@@ -95,6 +95,51 @@ function extractKeywords(text: string): string[] {
 }
 
 /**
+ * Extract a meaningful topic from chunk content
+ * Looks for condition/topic names in the content rather than using generic section headers
+ */
+function extractTopicFromContent(content: string): string | null {
+  // Look for patterns like "(Link: www.nhs.uk/) Topic Name" or just topic names
+  const topicPatterns = [
+    /\(Link:[^)]+\)\s*([A-Z][a-z]+(?:\s+[a-z]+)*)/,  // After links
+    /^([A-Z][a-z]+(?:\s+(?:and|or|of|the|in|for)?\s*[a-z]+)*)\s+(?:is|are|can|may|include|causes?)/m,  // Topic at start of sentence
+    /About\s+([A-Z][a-z]+(?:\s+[A-Za-z]+)*)/,  // "About Topic"
+    /^#\s*([A-Z][a-z]+(?:\s+[A-Za-z]+)*)/m,  // Markdown heading
+  ];
+
+  for (const pattern of topicPatterns) {
+    const match = content.match(pattern);
+    if (match && match[1] && match[1].length > 3 && match[1].length < 50) {
+      // Clean up the topic
+      const topic = match[1].trim();
+      // Skip generic words
+      if (!['The', 'This', 'That', 'These', 'Those', 'Some', 'Many', 'Most'].includes(topic)) {
+        return topic;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get human-readable category name
+ */
+function getReadableCategoryName(fileName: string): string {
+  const lower = fileName.toLowerCase();
+  if (lower.includes('category a') || lower.includes('category_a')) return 'Common Symptoms';
+  if (lower.includes('category b') || lower.includes('category_b')) return 'Prevention & Lifestyle';
+  if (lower.includes('category c') || lower.includes('category_c')) return 'Emergency Signs';
+  if (lower.includes('category d') || lower.includes('category_d')) return 'Medication Safety';
+  if (lower.includes('category e') || lower.includes('category_e')) return 'Prevention & Lifestyle';
+  if (lower.includes('emergency') || lower.includes('red_flag')) return 'Emergency Signs';
+  if (lower.includes('medication') || lower.includes('drug')) return 'Medication Safety';
+  if (lower.includes('flu') || lower.includes('cold')) return 'Common Symptoms';
+  if (lower.includes('chest') || lower.includes('pain')) return 'Emergency Signs';
+  return 'Health Information';
+}
+
+/**
  * Parse a markdown file into knowledge chunks
  */
 function parseMarkdownFile(filePath: string, content: string): KnowledgeChunk[] {
@@ -119,9 +164,8 @@ function parseMarkdownFile(filePath: string, content: string): KnowledgeChunk[] 
     if (fileName.includes('D')) category = 'Medication';
   }
 
-  // Extract title from first heading or file name
-  const titleMatch = content.match(/^#\s+(.+)$/m);
-  const title = titleMatch ? titleMatch[1] : fileName.replace(/_/g, ' ');
+  // Get human-readable title for the source
+  const readableTitle = getReadableCategoryName(fileName);
 
   // Split content by sections (## headings)
   const sections = content.split(/^##\s+/m);
@@ -132,27 +176,29 @@ function parseMarkdownFile(filePath: string, content: string): KnowledgeChunk[] 
     // For first section (before any ## heading), use as intro
     const isIntro = index === 0 && !content.startsWith('##');
 
-    let sectionTitle = 'Introduction';
     let sectionContent = section;
 
     if (!isIntro) {
-      // Extract section title from first line
+      // Remove the section header line (e.g., "Chunk 1")
       const lines = section.split('\n');
-      sectionTitle = lines[0].trim();
       sectionContent = lines.slice(1).join('\n');
     }
 
     // Skip very short sections
     if (sectionContent.trim().length < 50) return;
 
+    // Extract a meaningful topic from the content itself
+    const extractedTopic = extractTopicFromContent(sectionContent);
+    const sectionTitle = extractedTopic || readableTitle;
+
     // Create chunk
     const chunk: KnowledgeChunk = {
       id: `${fileName}-${index}`,
       content: sectionContent.trim().substring(0, 1500), // Limit chunk size
       source: fileName + '.md',
-      title: title,
+      title: readableTitle,  // Use readable category name
       category: category,
-      section: sectionTitle,
+      section: sectionTitle,  // Use extracted topic or readable title
       keywords: extractKeywords(section)
     };
 
@@ -165,7 +211,7 @@ function parseMarkdownFile(filePath: string, content: string): KnowledgeChunk[] 
       id: `${fileName}-0`,
       content: content.trim().substring(0, 2000),
       source: fileName + '.md',
-      title: title,
+      title: readableTitle,
       category: category,
       keywords: extractKeywords(content)
     });
